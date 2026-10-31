@@ -11,7 +11,7 @@ import {
 } from './floor-plan-story-data'
 
 /*
- * P5.90 item 20 (P5.28 item 27): a floor plan is never edited on a phone. The picture of it was
+ * A floor plan is never edited on a phone. The picture of it was
  * removed (no story edits a plan at phone width); this proves the refusal instead.
  */
 

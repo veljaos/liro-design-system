@@ -49,7 +49,7 @@ const meta = {
           'approval under way. Each step’s state from `run.steps` as an icon, words and a ' +
           'status tone: done (success), running (neutral, strong outline), waiting (warning), ' +
           'failed (danger, with its reason), skipped and not reached (dashed, muted). Never ' +
-          'blue for a state (D17). The connections the run went along (`run.path`) are drawn ' +
+          'blue for a state. The connections the run went along (`run.path`) are drawn ' +
           'strong, the others dashed. A failed step offers the application’s actions (Skip, ' +
           'Retry — the main one last) through `onStepAction`. Above the canvas: the run’s ' +
           'status, "4 of 11 steps done", the failures and the application’s line.\n\n' +

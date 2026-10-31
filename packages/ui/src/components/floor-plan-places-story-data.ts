@@ -1,5 +1,5 @@
 /*
- * Story data of FloorPlan's follow-up (P5.25a): fictitious. A hospital ward's floor drawn under
+ * Story data of FloorPlan's follow-up: fictitious. A hospital ward's floor drawn under
  * the plan (the building's own drawing as an image), with rooms as rectangles and polygons, beds
  * in their states; and a store room's bins with how full each is. The states, their words, tones
  * and icons are the application's map. Not part of the package: nothing in src/index.ts imports

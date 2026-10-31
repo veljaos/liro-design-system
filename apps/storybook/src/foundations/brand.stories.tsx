@@ -18,7 +18,7 @@ import wordmarkMonoWhite from '@veljaos/tokens/brand/wordmark-mono-white.svg'
 import wordmarkNeutral from '@veljaos/tokens/brand/wordmark-neutral.svg'
 
 /*
- * The Liro brand files of `@veljaos/tokens/brand` (P3.7), the Core's default brand. Components
+ * The Liro brand files of `@veljaos/tokens/brand`, the Core's default brand. Components
  * never import them: AppShell, AuthShell and the status pages take the logo through props, and
  * the application passes these files.
  */
@@ -31,7 +31,7 @@ interface BrandFile {
   src: string
   /** What it is for. */
   use: string
-  /** The backgrounds it is made for (P4.0: each surface shows only its own versions). */
+  /** The backgrounds it is made for (each surface shows only its own versions). */
   on: readonly Surface[]
 }
 
@@ -162,7 +162,7 @@ export const Versions: Story = {
 }
 
 /**
- * The application lockup (P4.0, owner): BrandLockup from `@veljaos/ui`, the name as text — no
+ * The application lockup: BrandLockup from `@veljaos/ui`, the name as text — no
  * icon — as the header, the status pages and the sign-in screen show it.
  */
 export const Lockup: Story = {
@@ -189,7 +189,7 @@ export const Lockup: Story = {
 }
 
 /**
- * The browser tab's favicon (P4.7b, drawn by the owner): the small mark redrawn from the logo's
+ * The browser tab's favicon: the small mark redrawn from the logo's
  * rule — a centre dot and rings, the dots larger toward the bottom-left and smaller toward the
  * top-right — on a transparent background, brand blue, lighter in a dark browser. The
  * installed-app icons keep the blue tile and the full sphere.

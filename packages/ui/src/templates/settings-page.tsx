@@ -9,24 +9,24 @@ import { useLiro } from '../provider/liro-provider'
 import { PageHeader } from './page-header'
 
 /*
- * SettingsPage (P4.6, the owner's decision, docs/decisions.md "Settings page"): sections of
+ * SettingsPage: sections of
  * setting rows that save at once.
  * - Sections are cards (raised, border.default, radius lg) with a title (sm semibold
  *   text.secondary, padding md) — no description, no icon.
  * - Each row: the setting's name (13px semibold) and its description (xs text.secondary) at the
  *   start, the control (a switch, a select, a button) at the end; a 1px border.subtle line between
  *   rows; padding sm by md. On phones the control stands under the description. The row names its
- *   control once: a field's own label inside the control is for assistive technology only (P4.9;
- *   FieldLabelsHidden), so the name never shows twice.
+ *   control once: a field's own label inside the control is for assistive technology only
+ *   (FieldLabelsHidden), so the name never shows twice.
  * - No Save button: a setting saves as soon as it changes (the application's work). After a
  *   successful save the row shows "Saved" with a 14px check in status.success.fg
  *   (`role="status"`); an error appears in the row in status.danger.fg with its icon
  *   (`role="alert"`, announced at once).
  * - Several groups of sections: tabs at the top, never a side navigation.
- * - A section may also hold a block after its rows (`content`, P5.62): a list the rows cannot
+ * - A section may also hold a block after its rows (`content`): a list the rows cannot
  *   hold, such as the signed-in devices, separated from the rows by the same line.
  * - The column (at most 960px) stands at the page's start, aligned with the header, and so do its
- *   tabs (P4.7, owner: business screens are start-aligned).
+ *   tabs (business screens are start-aligned).
  */
 
 /** One setting. */
@@ -53,7 +53,7 @@ export interface SettingsSection {
   rows: readonly SettingRow[]
   /**
    * A block after the rows (or instead of them), inside the same card, 16px around: a list the
-   * rows cannot hold, such as the devices signed in to the account (SessionList) (P5.62).
+   * rows cannot hold, such as the devices signed in to the account (SessionList).
    */
   content?: ReactNode
 }
@@ -159,7 +159,7 @@ function Section({ section, phone }: { section: SettingsSection; phone: boolean 
 export function SettingsPage(props: SettingsPageProps) {
   const viewportPhone = usePhone()
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
-  // Under the tabs the gap is Tabs' own (TAB_PANEL_GAP, P5.23); a single group keeps 16px
+  // Under the tabs the gap is Tabs' own (TAB_PANEL_GAP); a single group keeps 16px
   // under the header.
   const sections = (group: SettingsGroup, single = false) => (
     <div className={cn('flex flex-col gap-4', single && 'pt-4')}>

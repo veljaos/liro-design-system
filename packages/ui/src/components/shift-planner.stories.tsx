@@ -68,7 +68,7 @@ function storeRotationCheck(
 /** What the application was asked to publish with (the messages chosen). */
 const published = fn()
 
-/** The messages a store can send with publishing (P5.28 item 9), as the application offers them. */
+/** The messages a store can send with publishing, as the application offers them. */
 const PUBLISH_NOTIFY = [
   {
     id: 'app',
@@ -134,7 +134,7 @@ function Planner(props: Partial<ShiftPlannerProps>) {
 
 /**
  * A day as the cells name it in the example stories: the long date in the interface's language
- * (English), never the tenant's (P5.28 item 2).
+ * (English), never the tenant's.
  */
 function day(date: string): string {
   return EXAMPLE_FORMAT.dateLong(date)
@@ -170,7 +170,7 @@ const meta = {
           'hours at the row’s end, coverage at the column’s foot; the schedule’s state and ' +
           'Publish (with a confirmation that states the application’s counts and offers its ' +
           'messages — `publishNotify` — as “Notify …” checkboxes: publishing messages nobody ' +
-          'the user has not chosen, P5.28 item 9); “Apply ' +
+          'the user has not chosen); “Apply ' +
           'rotation…” fills days from a rotation pattern.\n\n' +
           '**Assigning — three ways (WCAG 2.5.7):** the keyboard (arrows, Shift+arrows for a ' +
           'range, a template’s key assigns it, Delete removes, Enter opens the cell’s menu); the ' +
@@ -732,7 +732,7 @@ export const Publishing: Story = {
 }
 
 /**
- * The publish confirmation with the application's messages as a choice (P5.28 item 9): the app's
+ * The publish confirmation with the application's messages as a choice: the app's
  * message checked by the application, the SMS not; while one is checked the button says "Publish
  * changes and notify".
  */
@@ -809,7 +809,7 @@ export const GoToAndPeriod: Story = {
 }
 
 /*
- * P5.28 item 4: the days row stays below the shell's sticky header while the page scrolls, and
+ * The days row stays below the shell's sticky header while the page scrolls, and
  * the people column stays at the start while the planner scrolls sideways.
  */
 

@@ -11,7 +11,7 @@ import { gridBoxes, gridKeyTarget, itemsInCell, physicalX } from './plot-logic'
 import type { ChartCategory, ChartStateProps, ChartTone } from './shared'
 
 /*
- * MatrixChart (P5.93 item 44, owner: "risk matrix likelihood × impact"): items placed in the cells
+ * MatrixChart ("risk matrix likelihood × impact"): items placed in the cells
  * of two scales, each cell coloured by the level the application gives it, in our own SVG.
  * - The levels are the application's ("Low", "Medium", "High", "Critical"), each with a status
  *   tone — a state, so the tones' backgrounds, lines and text colours —, named in the legend; the
@@ -61,7 +61,7 @@ export interface MatrixChartProps extends ChartStateProps {
   /** A row's height in pixels. Default 56 (48 on phones). */
   rowHeight?: number
   controls?: ReactNode
-  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end. */
   toggle?: ReactNode
   layout?: 'desktop' | 'phone'
   className?: string

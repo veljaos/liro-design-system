@@ -130,7 +130,7 @@ const meta = {
           'the composer is the shortcut) with the files in `attachments` (an AttachmentList); ' +
           '`onInsertLink`: the application opens its own search (a knowledge base in ' +
           'LookupDialog) and resolves with `{ text, href }`, inserted as a link at the caret. ' +
-          '**Merge values** (P5.31): a saved reply may use merge fields ("Dear ' +
+          '**Merge values**: a saved reply may use merge fields ("Dear ' +
           '{{contact.firstName}}, … today, {{date_now}}"); with `mergeValues` (this ' +
           'conversation’s values) they are written in as it is inserted — dates and amounts ' +
           "through `format`, fields `computed` from 'today' or 'now' from the provider’s day " +
@@ -233,7 +233,7 @@ export const Sending: Story = {
   },
 }
 
-/** Nothing can be written (P5.93): the text read-only, the tools and Send unavailable, why in words. */
+/** Nothing can be written: the text read-only, the tools and Send unavailable, why in words. */
 export const UnavailableWithReason: Story = {
   name: 'Unavailable with reason',
   render: () => (
@@ -436,7 +436,7 @@ export const AttachInteraction: Story = {
 }
 
 /**
- * A reply started from a saved reply with merge fields (P5.31): the contact's name, the ticket,
+ * A reply started from a saved reply with merge fields: the contact's name, the ticket,
  * the incident date (through `format`) and today and today + 7 (computed from the provider's
  * `today`) are written in; the invoice number has no value yet — a pill marked "No value",
  * named under the text.
@@ -444,7 +444,7 @@ export const AttachInteraction: Story = {
 export const WithValues: Story = {
   name: 'Merge values, one missing',
   // Today and today + 7 are written into the text: a fixed day keeps the picture from changing
-  // with the date (C6).
+  // with the date.
   render: () => (
     <StoryProvider today="2026-10-15">
       <Composer

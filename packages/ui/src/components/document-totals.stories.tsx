@@ -20,10 +20,10 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** a document’s totals under its lines, end-aligned, no card (P4.5): rows ' +
+          '**What for:** a document’s totals under its lines, end-aligned, no card: rows ' +
           'from the application, the final row large under a strong line. **Nothing is ' +
-          'computed here** (D4): every amount arrives as a decimal string.\n\n' +
-          '**Complex documents (P5.18), in this order:** the `rows` (total without VAT, VAT, ' +
+          'computed here**: every amount arrives as a decimal string.\n\n' +
+          '**Complex documents, in this order:** the `rows` (total without VAT, VAT, ' +
           'invoice total); the **recap by tax category** (`recap`: category, base, rate, tax — ' +
           'a small table under its caption; the block is then 384px wide); the **deductions** ' +
           '(`deductions`: one row per advance, its label a link to the advance); the final row ' +
@@ -71,7 +71,7 @@ export const Default: Story = {
   },
 }
 
-/** The P4.5 block: rows and the final row only. */
+/** The plain block: rows and the final row only. */
 export const Simple: Story = {}
 
 /**

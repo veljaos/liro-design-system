@@ -21,7 +21,7 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          'A modal dialog: 440px, 5dvh from the top, header with a close button, body, actions at the end. Dialog and ConfirmDialog (P2.4).',
+          'A modal dialog: 440px, 5dvh from the top, header with a close button, body, actions at the end. Dialog and ConfirmDialog.',
         ),
       },
     },

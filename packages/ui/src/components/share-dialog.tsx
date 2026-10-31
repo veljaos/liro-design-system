@@ -46,11 +46,11 @@ import { SelectField } from './select-field'
 import { usePhone } from './use-phone'
 
 /*
- * ShareDialog (BUILD-PLAN P5.43): who may open a file or a folder, and a link for anyone else.
+ * ShareDialog: who may open a file or a folder, and a link for anyone else.
  * Every person, role, portal, access level and rule is the application's; the dialog shows them
  * and reports what the user asks.
- * - The title "Share" with the item bold under it (D22), then three parts (P5.93 item 21, the
- *   owner's fourth review: the familiar pattern of the big file services):
+ * - The title "Share" with the item bold under it, then three parts (the
+ *   familiar pattern of the big file services):
  *   1. **Add people or roles**: one search among the application's people, roles and client
  *      portals (ComboboxField, searched by name), the access level ("View", "Edit": the
  *      application's levels) and **Invite**. `addUnavailable` replaces them with the reason.
@@ -68,7 +68,7 @@ import { usePhone } from './use-phone'
  *      error, never sent) and "Password" (a switch; turning it on asks for the password, used
  *      once and not kept). `linkUnavailable` says why a link cannot be made ("Employee files are
  *      never shared by link.") and keeps it Restricted.
- * - Phones: a full-screen sheet (`layout`, D19).
+ * - Phones: a full-screen sheet (`layout`).
  * - "Done" closes it: every change is reported as it is made (`onAdd`, `onLevelChange`,
  *   `onRevoke`, `onCreateLink`, `onLinkChange`, `onRevokeLink`); saving is the application's.
  */

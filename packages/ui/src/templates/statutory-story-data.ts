@@ -1,10 +1,10 @@
 /*
- * An illustrative VAT return as a form grid (P5.28 item 19), for the StatutoryFormPage stories and
+ * An illustrative VAT return as a form grid, for the StatutoryFormPage stories and
  * the VAT return example: four parts in the manner of a PP PDV / POPDV-like form — groups of rates
  * over Base and VAT, nested numbered groups, one-column parts, cells that do not apply left out,
  * entered, computed and source cells. **Not the authority's form:** the parts, numbers, texts and
  * rules are invented to show the structure. The application's arithmetic (totals in whole paras)
- * is played here; components never add (D4). Not part of the package: nothing in src/index.ts
+ * is played here; components never add. Not part of the package: nothing in src/index.ts
  * imports this file. No classes here.
  */
 import type { ReactNode } from 'react'

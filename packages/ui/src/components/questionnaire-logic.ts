@@ -1,6 +1,6 @@
 /*
- * The logic of Questionnaire (P5.1), kept apart from the markup so it can be unit-tested
- * (AGENTS.md C7): the path through branching questions, what counts as answered, the progress,
+ * The logic of Questionnaire, kept apart from the markup so it can be unit-tested:
+ * the path through branching questions, what counts as answered, the progress,
  * where Next and Back go, and which answers are submitted. The component decides nothing about the
  * content: questions, branches and validation come from the application.
  *
@@ -246,7 +246,7 @@ export function chooseOption(
   return { ...answer, value: checked ? value : null }
 }
 
-/** Where a key was pressed, as the questionnaire's keys tell it (P5.90 item 10). */
+/** Where a key was pressed, as the questionnaire's keys tell it. */
 export type QuestionnaireKeyTarget =
   /** A one-line typing field (a typed answer, "Other"'s text): digits type, Enter goes on. */
   | 'typing'
@@ -261,7 +261,7 @@ export type QuestionnaireKeyTarget =
 export type QuestionnaireKeyAction = { kind: 'choose'; index: number } | { kind: 'next' } | null
 
 /**
- * The questionnaire's keys (P5.90 item 10): on a choice question, 1–9 choose the numbered option
+ * The questionnaire's keys: on a choice question, 1–9 choose the numbered option
  * (the `choices` that can be chosen, in order; the number is shown at each option's end), unless
  * the user is typing; Enter goes to the next question (Next checks the answer first), except on a
  * button, which presses itself, and in a multi-line text box (Ctrl/Cmd+Enter goes on from both).

@@ -40,7 +40,7 @@ const meta = {
           'language. The pure rules (`definedFormState`, `definedConditionHolds`, ' +
           '`definedFormProblems` for the application’s tests) are exported.\n\n' +
           '**When to use:** forms whose fields the application defines as data — document ' +
-          'templates (P5.66), reports to authorities (P5.87), configurable requests. **When ' +
+          'templates, reports to authorities, configurable requests. **When ' +
           'not:** a form designed once for one screen (write it with FormSection and the fields, ' +
           'or RecordFormPage); questions asked one at a time with branching (Questionnaire). The ' +
           'document itself, its preview and its PDF are the application’s (DocumentFrame).',
@@ -153,7 +153,7 @@ export const LongText: Story = {
   args: { sections: LONG, showMissing: true },
 }
 
-/** The definitions are on their way (P5.93): a card of skeleton fields. */
+/** The definitions are on their way: a card of skeleton fields. */
 export const Loading: Story = {
   args: { sections: [], loading: true },
 }
@@ -193,7 +193,7 @@ export const Custom: Story = {
   },
 }
 
-/** Definitions written in Serbian on an English page: their texts carry `lang` (D15). */
+/** Definitions written in Serbian on an English page: their texts carry `lang`. */
 export const OtherLanguage: Story = {
   name: 'Definitions in another language',
   args: { sections: SERBIAN, lang: 'sr-Latn' },

@@ -52,7 +52,7 @@ describe('mergeFieldText', () => {
     expect(mergeFieldText('time_now', context({}))).toBeNull()
   })
 
-  it('keeps every decimal of an amount (D4)', () => {
+  it('keeps every decimal of an amount', () => {
     const text = mergeFieldText('balance', context({ balance: '0.125' }))
     expect(text).toContain('125')
   })

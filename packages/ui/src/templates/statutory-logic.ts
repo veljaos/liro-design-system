@@ -2,11 +2,10 @@ import type { ReactNode } from 'react'
 import type { StatutoryRule } from './register-logic'
 
 /*
- * The model and the pure logic of StatutoryFormPage as a form grid (P5.28 item 19, the owner:
- * "VAT return and statutory forms as the real form grid, like PP PDV, POPDV and the input-VAT
- * records"), unit-tested in `statutory-logic.test.ts`. Rows, columns, codes and texts are the
- * application's; nothing here computes a value of the form — these functions only lay out,
- * find and name what they are given.
+ * The model and the pure logic of StatutoryFormPage as the real form grid (like PP PDV, POPDV
+ * and the input-VAT records), unit-tested in `statutory-logic.test.ts`. Rows, columns, codes and
+ * texts are the application's; nothing here computes a value of the form — these functions only lay
+ * out, find and name what they are given.
  */
 
 /** A document behind an amount. */
@@ -83,7 +82,7 @@ export interface StatutoryCell {
   /** `computed` or `source`: the application's field to type a value over the computed one. */
   editor?: ReactNode
   /**
-   * The application's own content in place of an amount, read-only (P5.45): a column that holds
+   * The application's own content in place of an amount, read-only: a column that holds
    * no figure, such as a financial statement's "Note" column with a link to the note. `value`
    * is then ignored (keep it null).
    */

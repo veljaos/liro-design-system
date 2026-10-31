@@ -6,7 +6,7 @@ import { UNBROKEN } from './field-story-data'
 import { StatusBadge, TONE_NAMES, toneFor, type Tone } from './status-badge'
 
 /**
- * Appendix A.7: an example map from statuses to tones. It is data for Storybook only; the
+ * An example map from statuses to tones. It is data for Storybook only; the
  * application gives its own map to toneFor.
  */
 const EXAMPLE_TONES: Record<string, Tone> = {
@@ -50,8 +50,8 @@ const meta = {
           '"Draft". The label comes from the application; the tone (success, warning, danger, ' +
           'info, neutral, premium) comes from `toneFor(status, map)` with a map the application ' +
           "gives as data. Text is always the tone's fg on its bg.\n\n" +
-          '**When not:** for an action (use Button); for a message the user must read (Alert, ' +
-          'P2.5); for long text: a badge never wraps. Colour is never the only signal: the label ' +
+          '**When not:** for an action (use Button); for a message the user must read ' +
+          '(Alert); for long text: a badge never wraps. Colour is never the only signal: the label ' +
           'says the state.',
       },
     },
@@ -103,7 +103,7 @@ export const OnSurfaces: Story = {
   ),
 }
 
-/** The example map of Appendix A.7, through toneFor. An unknown status is neutral. */
+/** An example map, through toneFor. An unknown status is neutral. */
 export const ToneForExample: Story = {
   name: 'toneFor with the example map',
   render: () => (
@@ -159,7 +159,7 @@ export const PhoneWidth: Story = {
 
 /**
  * A label wider than the room there (a narrow phone card): it wraps inside the badge, never past
- * it — also a label without a single space (P5.90 item 7).
+ * it — also a label without a single space.
  */
 export const UnbrokenPhone: Story = {
   name: 'Unbroken text, phone width',

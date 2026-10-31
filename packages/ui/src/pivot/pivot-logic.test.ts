@@ -258,7 +258,7 @@ describe('the grid’s keys', () => {
   })
 })
 
-describe('suggested views, the summary and dropping a chip (P5.93 item 45)', () => {
+describe('suggested views, the summary and dropping a chip', () => {
   it('orders the zones Rows, Columns, Values, Filters', () => {
     expect(PIVOT_AREAS).toEqual(['rows', 'columns', 'values', 'filters'])
   })

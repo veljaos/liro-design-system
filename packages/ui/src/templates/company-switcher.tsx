@@ -31,8 +31,8 @@ import {
 } from './company-logic'
 
 /*
- * The company switcher (P4.1; scaled in P4.9, the owner's review: an accountant may have 5,000
- * companies). One list for the desktop popover and the phone sheet:
+ * The company switcher (an accountant may have 5,000 companies). One list for the desktop popover
+ * and the phone sheet:
  * - a search field at the top (name or description — the application's tax-number line —
  *   ignoring case and accents) when there are more than COMPANY_SEARCH_THRESHOLD companies, and
  *   always on a phone;

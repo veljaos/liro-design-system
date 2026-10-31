@@ -4,7 +4,7 @@ import { cn } from '../primitives/cn'
 import type { IconComponent } from './intents'
 
 /*
- * A tile's or a card's state line (P5.93 item 15, the owner's fourth review): one pattern for
+ * A tile's or a card's state line: one pattern for
  * every tile and card that says what state it is in — the icon and the state in words on the
  * first line ("Unavailable", "Low stock", "Locked"), the detail under it ("Sold out", "3 left",
  * "Available in Pro"), lined up with the state's words. The tone colours the first line and

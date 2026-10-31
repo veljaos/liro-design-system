@@ -73,7 +73,7 @@ import { useTreeWindow } from './tree-window'
 import { spacersBetween } from './virtual-rows'
 
 /*
- * LegalText (BUILD-PLAN P5.27 b): the text of a legal act as the application gives it
+ * LegalText: the text of a legal act as the application gives it
  * (`legal-model.ts`), for reading. The library presents it and decides nothing legal.
  * - Reading width: at most 70 characters a line, at the start side. Parts, chapters and sections
  *   are real headings, from `headingLevel` down by depth; an article's label and title are its
@@ -81,7 +81,7 @@ import { spacersBetween } from './virtual-rows'
  *   marks link to the footnotes under the text.
  * - Every article: "Copy link" (the application's `onCopyLink`, else its address on the
  *   clipboard and a "Link copied" toast); its label selects it (`onArticleSelect`: the selection
- *   is surface.selected with the border.selected bar, D17); the application's actions
+ *   is surface.selected with the border.selected bar); the application's actions
  *   (`articleActions`: a note, a bookmark) in a menu. Phones: one menu with all of them.
  * - Change marks under the heading, small: "Amended by No. 47/2018 · applies from 01.07.2018."
  *   (neutral) and "Applies from 01.01.2027." for an article not yet in force (premium). Never blue.
@@ -89,7 +89,7 @@ import { spacersBetween } from './virtual-rows'
  * - References are links through the provider's `linkComponent`; with `resolveTarget` a 24px
  *   preview button after each opens the target article in a popover (keyboard: Tab to it, Enter;
  *   Escape closes; the popover is not modal, so the focus is never trapped). On phones it opens a
- *   bottom sheet instead, never a popover over the text (P5.93 item 31): the article's label and
+ *   bottom sheet instead, never a popover over the text: the article's label and
  *   title as its title, its text, and "Open Article 5" as the sheet's one action.
  * - Search in the act runs on the data (`legal-logic.ts`), so it also finds articles that are not
  *   drawn: hits marked on status.warning.bg (never a blue fill), the current one also underlined
@@ -98,7 +98,7 @@ import { spacersBetween } from './virtual-rows'
  *   transliteration (one to one), Latin in Cyrillic is the application's text (`onScriptChange`).
  * - Long acts: with `maxHeight` the text scrolls inside it and only the headings and articles in
  *   view are drawn (TanStack Virtual, the shared rules of `virtual-rows.ts`).
- * - The text carries `lang` when it differs from the page (D15); every block takes its direction
+ * - The text carries `lang` when it differs from the page; every block takes its direction
  *   from its content (TEXT_DIRECTION).
  */
 
@@ -163,7 +163,7 @@ export interface LegalTextProps {
   /**
    * The text scrolls inside this height (CSS length, e.g. "70vh") and draws only the headings
    * and articles in view: for long acts (300 articles and more). Not on phones: there the text
-   * flows with the page (P5.90).
+   * flows with the page.
    */
   maxHeight?: string
   /** 'phone' puts every article action in one menu; default by the viewport (below 48em). */
@@ -233,7 +233,7 @@ interface InlineContext {
   /** The reference (`partId:index`) whose preview stands open at first, until it closes. */
   defaultPreview: string | null
   dismissDefaultPreview: () => void
-  /** Phones: a preview opens as a bottom sheet, never a popover over the text (P5.93 item 31). */
+  /** Phones: a preview opens as a bottom sheet, never a popover over the text. */
   phone: boolean
 }
 
@@ -884,7 +884,7 @@ export function LegalText({ ref, ...props }: LegalTextProps) {
   )
 
   // ── Entries and the window ──
-  // On phones the act flows with the page, never in a box with its own scroll (P5.90 item 5).
+  // On phones the act flows with the page, never in a box with its own scroll.
   const windowed = props.maxHeight !== undefined && !phone
   const scroller = useRef<HTMLDivElement>(null)
   const [focusIndex, setFocusIndex] = useState<number | null>(null)

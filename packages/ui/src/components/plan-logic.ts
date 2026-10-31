@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 
 /*
- * The logic of PlanComparison (BUILD-PLAN P5.36), kept apart from the markup so it can be
- * unit-tested (AGENTS.md C7): what a feature's cell says for a plan, where the feature groups
+ * The logic of PlanComparison, kept apart from the markup so it can be
+ * unit-tested: what a feature's cell says for a plan, where the feature groups
  * start, and which plans can be chosen. Nothing here prices, ranks or recommends: the plans,
  * their prices and what each includes are the application's.
  */
@@ -20,7 +20,7 @@ export interface ComparedPlan {
   description?: ReactNode
   /**
    * Why this plan cannot be chosen now, in words ("Start has 5 users; you have 24."): the radio
-   * is disabled and the reason is shown under the plan (D3).
+   * is disabled and the reason is shown under the plan.
    */
   unavailableReason?: ReactNode
 }

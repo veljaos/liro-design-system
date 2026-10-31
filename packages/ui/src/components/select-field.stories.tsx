@@ -13,7 +13,7 @@ const CURRENCIES: SelectOption[] = [
   { value: 'chf', label: 'Swiss franc (no exchange rate today)', group: 'Foreign', disabled: true },
 ]
 
-/** A class of 30 pupils (P5.28 item 3): more than ten options, so the list is searched. */
+/** A class of 30 pupils: more than ten options, so the list is searched. */
 const PUPILS: SelectOption[] = [
   'Ana Babić',
   'Bojan Cvetković',
@@ -47,7 +47,7 @@ const PUPILS: SelectOption[] = [
   'Žarko Gavrilović',
 ].map((label, index) => ({ value: `p${String(index + 1)}`, label }))
 
-/** Options longer than a phone's width (P5.28 item 1): they wrap inside the list. */
+/** Options longer than a phone's width: they wrap inside the list. */
 const LONG_OPTIONS: SelectOption[] = [
   { value: 'early', label: 'Mon 12.10. 06:00–14:00, Prodavnica 12, cash desk 2 (Marko Petrović)' },
   { value: 'late', label: 'Tue 13.10. 14:00–22:00, Prodavnica 12, warehouse and receiving' },
@@ -63,7 +63,7 @@ const meta = {
         component:
           '**What for:** one choice from a list the application already has, optionally in ' +
           'groups. Read only shows the chosen label in the read-only look. From 11 options the list is ' +
-          'searched by typing (`searchable`, P5.28): a text box with the chevron; a press shows ' +
+          'searched by typing (`searchable`): a text box with the chevron; a press shows ' +
           'every option, typing filters them. The list never runs off the screen: it keeps 8px ' +
           'inside it and a long option wraps; it scrolls with the finger, without scroll buttons.\n\n' +
           '**When not:** a long list or one searched on the server (ComboboxField); several ' +
@@ -166,7 +166,7 @@ export const Japanese: Story = {
   ),
 }
 
-/** More than ten options (a class of 30 pupils): the list is searched by typing (P5.28 item 3). */
+/** More than ten options (a class of 30 pupils): the list is searched by typing. */
 export const ManyOptions: Story = {
   name: 'Many options, searched by typing',
   args: { label: 'Pupil', options: PUPILS, placeholder: 'Choose a pupil', defaultValue: 'p13' },
@@ -204,7 +204,7 @@ export const ManyOptionsInteraction: Story = {
   },
 }
 
-/** On a phone the searched list opens under the field, inside the screen (P5.28 items 1, 3). */
+/** On a phone the searched list opens under the field, inside the screen. */
 export const ManyOptionsPhone: Story = {
   name: 'Many options, phone, open',
   render: () => (
@@ -223,7 +223,7 @@ export const ManyOptionsPhone: Story = {
 
 /**
  * A short list with options longer than the phone is wide: the list keeps 8px inside the screen
- * and the options wrap; the page never scrolls sideways (P5.28 item 1).
+ * and the options wrap; the page never scrolls sideways.
  */
 export const LongOptionsPhone: Story = {
   name: 'Long options, phone, open',
@@ -253,7 +253,7 @@ export const LongOptionsPhone: Story = {
 }
 
 /**
- * Languages in their own names (P5.62, D15): each option carries its language (`lang`), in the
+ * Languages in their own names: each option carries its language (`lang`), in the
  * list and once chosen, so a screen reader reads "Srpski" as Serbian in an English page.
  */
 export const OwnLanguages: Story = {

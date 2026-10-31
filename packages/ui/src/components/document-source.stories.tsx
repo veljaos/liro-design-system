@@ -25,7 +25,7 @@ const meta = {
       description: {
         component:
           '**What for:** the document a correcting or cancelling document refers to — a ' +
-          'decrease, an increase, a cancellation document, a credit note, a return (P5.23). It ' +
+          'decrease, an increase, a cancellation document, a credit note, a return. It ' +
           'is the most important fact of such a page, so it stands in DocumentPage’s header ' +
           '(`source`), beside the customer and at the same level: the label from the ' +
           'application ("Corrects", "Cancels"), then the source as a link with its kind and ' +

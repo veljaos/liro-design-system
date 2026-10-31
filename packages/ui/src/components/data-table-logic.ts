@@ -6,19 +6,18 @@ export type DataTableSort = { column: string; direction: 'asc' | 'desc' } | null
 
 /**
  * The table's filters, as the application keeps them: filter id → value. The table reads them
- * only to tell "nothing here yet" from "no rows match", and clears them (P3.1; FilterBar, P3.3,
- * edits them).
+ * only to tell "nothing here yet" from "no rows match", and clears them (FilterBar edits them).
  */
 export type DataTableFilters = Readonly<Record<string, unknown>>
 
-/** Above this count, a table shows "More than 10,000" (BUILD-PLAN P3.1). */
+/** Above this count, a table shows "More than 10,000". */
 export const COUNT_THRESHOLD = 10_000
 
 /**
  * The count of rows in words, through `messages['table.count']`: the exact number up to the
  * threshold, else "More than <threshold>". A count the server did not finish (`exact` false) is
  * a lower bound: "More than <count>". The number is written by the provider's `format.number`,
- * as every count is (P4.9).
+ * as every count is.
  */
 export function formatCount(
   messages: Pick<LiroMessages, 'table.count'>,
@@ -46,7 +45,7 @@ export function hasActiveFilters(filters: DataTableFilters | undefined): boolean
 }
 
 /**
- * The sort after a header is pressed (the owner, 2026-09-30): another column sorts ascending; the
+ * The sort after a header is pressed: another column sorts ascending; the
  * column sorted ascending turns descending; descending turns ascending again. Never back to
  * "unsorted": the application decides the default order.
  */
@@ -68,20 +67,20 @@ export function ariaSort(
   return sort.direction === 'asc' ? 'ascending' : 'descending'
 }
 
-/** The narrowest a column can be resized to, unless the column sets its own minimum (owner). */
+/** The narrowest a column can be resized to, unless the column sets its own minimum. */
 export const MIN_COLUMN_WIDTH = 64
 
 /**
- * The narrowest a document table's description column (the item or service name) gets (P5.23):
+ * The narrowest a document table's description column (the item or service name) gets:
  * at 13px a name of up to about 60 characters wraps to at most two lines; the table scrolls
  * sideways before the column gets narrower. Amount columns never wrap (MoneyText, NumberText).
  */
 export const DESCRIPTION_MIN_WIDTH = 240
 
-/** The widest a column can be resized to (owner). */
+/** The widest a column can be resized to. */
 export const MAX_COLUMN_WIDTH = 640
 
-/** One arrow key press; with Shift, and the popover's buttons, the large step (owner). */
+/** One arrow key press; with Shift, and the popover's buttons, the large step. */
 export const RESIZE_STEP = 10
 export const RESIZE_STEP_LARGE = 40
 
@@ -93,7 +92,7 @@ export function clampWidth(width: number, min = MIN_COLUMN_WIDTH): number {
 /**
  * The width after an arrow key on a resize handle, or null for any other key. The arrow that
  * widens points in the reading direction: ArrowRight in left-to-right, ArrowLeft in
- * right-to-left (Appendix B.7: movement measures from the leading edge).
+ * right-to-left (movement measures from the leading edge).
  */
 export function widthAfterKey(
   width: number,
@@ -112,7 +111,7 @@ export function widthAfterKey(
 /**
  * The width while dragging a resize handle: the pointer's movement from where the drag started,
  * measured from the leading edge, so moving towards the column's end widens it in both
- * directions (Appendix B.7).
+ * directions.
  */
 export function widthAfterDrag(
   startWidth: number,
@@ -126,7 +125,7 @@ export function widthAfterDrag(
 }
 
 /**
- * Where a subtotal row's amounts start (P5.18): the index of the first column of the trailing run
+ * Where a subtotal row's amounts start: the index of the first column of the trailing run
  * of end-aligned columns (the amounts at the row's end). The subtotal's label spans the columns
  * before it, end-aligned, so it stands next to its amounts. With no end-aligned column at the end,
  * the last column carries the amount; with only end-aligned columns, the first holds the label.
@@ -139,7 +138,7 @@ export function subtotalStart(aligns: readonly ('start' | 'center' | 'end' | und
 }
 
 /**
- * What a key does on a focused row or card that can be pressed (P4.3, owner): Space presses it
+ * What a key does on a focused row or card that can be pressed: Space presses it
  * (the pointer's action: a quick preview on a list page); Enter opens the record when the table
  * has `onRowOpen`, and otherwise presses it as before.
  */
@@ -150,7 +149,7 @@ export function rowKeyAction(key: string, canOpen: boolean): 'press' | 'open' | 
 }
 
 /**
- * Where the focus goes from a focused row or card that can be pressed (P5.30, an inbox worked from
+ * Where the focus goes from a focused row or card that can be pressed (an inbox worked from
  * the keyboard): ArrowDown and ArrowUp to the next and previous one, Home and End to the first and
  * last drawn. Null when the key does not move it (another key, or already at that end).
  */

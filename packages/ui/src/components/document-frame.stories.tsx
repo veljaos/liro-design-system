@@ -19,8 +19,8 @@ const meta = {
           'in the shape of the protocol. The toolbar (previous and next page, "Page 1 of 3", zoom ' +
           'out, the zoom level, zoom in) asks the viewer and shows what the viewer reports. A ' +
           'skeleton while it loads; an error with "Try again" when the viewer fails or does not ' +
-          'answer in time. The protocol — message names, payloads, direction, origin rules and an ' +
-          'example viewer — is in `docs/document-frame.md`; these stories host a small viewer ' +
+          'answer in time. The protocol — message names, payloads, direction and origin rules ' +
+          '— is in `document-frame-protocol.ts`; these stories host a small viewer ' +
           'written in the story.\n\n' +
           '**When:** a document preview in a signing page, an attachment preview, a print ' +
           'preview served by the Core.\n\n' +

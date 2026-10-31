@@ -1,6 +1,6 @@
 /*
- * Group F's example data (P5.21): journal entry NK-2026-0912 and the September 2026 payroll for
- * 46 employees of Kvadrat Gradnja d.o.o. (bank statement 188 moved to data-bank.ts in P5.23).
+ * The example data: journal entry NK-2026-0912 and the September 2026 payroll for
+ * 46 employees of Kvadrat Gradnja d.o.o. (bank statement 188 is in data-bank.ts).
  * Amounts are whole paras (BigInt) and every total is computed here, as the Core would; the
  * components add nothing. Not part of the package. No classes here.
  */

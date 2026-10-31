@@ -13,7 +13,7 @@ import { StatusBadge, type Tone } from './status-badge'
 import { usePhone } from './use-phone'
 
 /*
- * HealthList (BUILD-PLAN P5.29): monitored things — connections to other systems, services,
+ * HealthList: monitored things — connections to other systems, services,
  * queues, databases, servers, regions — each with its state, its figures, when it last worked and
  * when it last failed, and what can be done about it (Retry). Everything in it is the
  * application's: the state's words and tone, every figure, every time and every message. The list
@@ -28,11 +28,11 @@ import { usePhone } from './use-phone'
  *   semibold) with its detail and the application's note (xs text.secondary); the state; the
  *   figures as label over value (xs text.secondary over sm medium, tabular); the last success and
  *   the last error with its message; the actions at the end. Rows are divided by border.subtle.
- *   A last error's raw response or log (`lastError.detail`, P5.93) opens on request ("Show
+ *   A last error's raw response or log (`lastError.detail`) opens on request ("Show
  *   details") as a small CodeBlock across the row, under it.
- * - Phones: one card per thing (P5.29, owner): the name and the state on top, the detail and note,
+ * - Phones: one card per thing: the name and the state on top, the detail and note,
  *   then the figures and the times as label / value rows, the error's message in full, the actions
- *   at the bottom. The title stands above the cards (never cards in a card, P4.9).
+ *   at the bottom. The title stands above the cards (never cards in a card).
  * - Actions are the application's (Retry, "Open log"): neutral secondary small buttons, each named
  *   with the thing ("Retry: SEF"); an action that returns a promise keeps its button busy until it
  *   settles, so it is not pressed twice.

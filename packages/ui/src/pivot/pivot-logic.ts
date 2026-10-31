@@ -1,5 +1,5 @@
 /*
- * The pivot's model and its pure logic (P5.77): the fields the application offers, the layout the
+ * The pivot's model and its pure logic: the fields the application offers, the layout the
  * user chooses (rows, columns, values with their aggregation, filters), and the result the
  * application computes for that layout. The library never adds, averages or counts: every cell,
  * subtotal and grand total is the application's decimal string (null shows as "—"). What is here:
@@ -10,7 +10,7 @@
 /** Where a field stands in the layout. */
 export type PivotArea = 'filters' | 'columns' | 'rows' | 'values'
 
-/** The areas in the chooser's order: Rows, Columns, Values, Filters (P5.93 item 45). */
+/** The areas in the chooser's order: Rows, Columns, Values, Filters. */
 export const PIVOT_AREAS: readonly PivotArea[] = ['rows', 'columns', 'values', 'filters']
 
 /** One choice from the application's list: an aggregation, or a dimension's value. */
@@ -60,7 +60,7 @@ export interface PivotLayout {
 export const EMPTY_PIVOT_LAYOUT: PivotLayout = { rows: [], columns: [], values: [], filters: [] }
 
 /**
- * A view the application suggests (P5.93 item 45): its name in the application's words ("By
+ * A view the application suggests: its name in the application's words ("By
  * site and month") and the layout it shows. The user starts from one and may change it.
  */
 export interface PivotView {
@@ -267,7 +267,7 @@ export function pivotViewOf(views: readonly PivotView[], layout: PivotLayout): s
   return views.find((view) => sameLayout(view.layout, layout))?.id
 }
 
-/** What the layout shows, in its fields' names: the one-line summary's parts (P5.93 item 45). */
+/** What the layout shows, in its fields' names: the one-line summary's parts. */
 export interface PivotSummaryParts {
   /** Each value: the field's name and its aggregation's (undefined when not in the field's list). */
   values: { field: string; aggregation: string | undefined }[]

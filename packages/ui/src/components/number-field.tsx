@@ -8,12 +8,12 @@ import { currencyFirst, readNumber, showNumber } from './number-logic'
 import { entryAttributes, entryError, useEntry, type EntryProps } from './use-entry'
 
 /*
- * NumberField and MoneyField (BUILD-PLAN P2.3). No input mask (Appendix B.3): the user types
+ * NumberField and MoneyField. No input mask: the user types
  * freely, pastes anything, and the text is read by `format.parseNumber` on leaving the field or
  * on Enter; then it is shown again through `format.number`, which never rounds. The value is a
- * decimal string or null, never a JavaScript number and never "0" for unreadable text (B.4).
+ * decimal string or null, never a JavaScript number and never "0" for unreadable text.
  *
- * Owner's decisions (2026-09-28, docs/decisions.md "Numbers, money and dates"):
+ * Rules:
  * - Unreadable text stays in the field for the user to correct; the value is null; the field shows
  *   `messages['field.invalidNumber']` as its error (the application's `error` wins) and tells the
  *   application through `onValidityChange`, so a form can block saving.
@@ -21,8 +21,8 @@ import { entryAttributes, entryError, useEntry, type EntryProps } from './use-en
  * - MoneyField's currency sits where `format.money` puts it for the locale.
  *
  * The text is laid out left to right in every direction (`dir="ltr"`): a number is written left to
- * right, and in a right-to-left field the bidi algorithm moved the minus sign to the end of
- * "-42,00" (docs/decisions.md, Provider). In right-to-left it is aligned to the field's start,
+ * right, and in a right-to-left field the bidi algorithm would move the minus sign to the end
+ * of "-42,00". In right-to-left it is aligned to the field's start,
  * which is the input's end. The direction is the provider's (`useLiro().direction`), not CSS:
  * Tailwind's `rtl:` also matches a left-to-right field inside a right-to-left page, and Vite's CSS
  * minifier rewrites `:dir(rtl)` into a list of right-to-left languages.
@@ -177,7 +177,7 @@ function startSection(text: string | undefined, control: { id: string }) {
 
 /**
  * A number typed freely (no mask) and read on leaving the field: "1234.56", "1.234,56",
- * "1 234,56" and the other forms of Appendix B.3 all give the decimal string "1234.56".
+ * "1 234,56" and the other usual forms all give the decimal string "1234.56".
  */
 export function NumberField(props: NumberFieldProps) {
   const { messages, direction } = useLiro()

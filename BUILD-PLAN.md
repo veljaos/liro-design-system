@@ -400,7 +400,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.96b | The owner's review of P5.96a: one hover look everywhere | P5.96a | done | 2026-10-30 | Every map area hovered or reached by the keys looks the same — its outline drawn over its neighbours and its tooltip, never a name on the area; every area of every level checked; focus rings that Tailwind 4's `outline-none` hid drawn again, and rings and frames no neighbour covers |
 | P6.1 | Full language and direction matrix | Phases 1–5 | done | 2026-10-31 | Every story already runs in light/dark × ltr/rtl; every component with text has its Arabic and Japanese stories, now enforced (`scripts/sample-text-stories.mjs`); 505 stories (the first two of every component and every example screen) run in sr-Cyrl-RS, sr-Latn-RS, ar and ja: no component defect |
 | P6.3 | Performance budget | P4.8 | done | 2026-10-31 | `apps/perf` builds the list and document examples for production; `pnpm perf` fails above 250 KB JavaScript or 160 KB CSS (gzip) per page; measured 236 KB and 152 KB, first paint about 3.2–3.4 s on a mid-range phone over slow 4G |
-| P6.6 | Full cleanup | P6.3 | todo | | |
+| P6.6 | Full cleanup | P6.3 | done | 2026-10-31 | Every comment, story description and test title says what the code does, in English, without plan steps, dates, review references or history (about 690 files); unused story data removed; stale comments fixed; CI keeps 24 parts per suite (the slowest part already takes 14 of its 25 minutes) |
 | P6.5 | Release 1.0.0 | all | todo | | |
 
 ---

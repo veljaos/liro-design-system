@@ -122,7 +122,7 @@ function SerbianToday({ children }: { children: ReactNode }) {
 }
 
 /**
- * Typed, the quick way (P5.94 item 2): a press in the empty field puts the caret in the start;
+ * Typed, the quick way: a press in the empty field puts the caret in the start;
  * "07102026" and "16.10." (this year) are read on Tab and written back as dates. No calendar.
  */
 export const TypedInteraction: Story = {

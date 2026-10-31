@@ -45,11 +45,11 @@ const meta = {
           'product stays focusable with its reason. Categories are chips at the start (the neutral ' +
           'selection, never blue); one tile is in the tab order and the arrows move from the leading ' +
           'edge. No text selection or callout on a long press.\n\n' +
-          '**P5.90:** every press answers at once — the tile is highlighted briefly and a device ' +
+          '**Feedback:** every press answers at once — the tile is highlighted briefly and a device ' +
           'that can vibrate pulses; `inOrder` shows how many of it the order holds; `categoryIds` ' +
           'puts a product under several chips (the application’s “Most sold” first); `search` ' +
           'finds products by name in every category.\n\n' +
-          '**P5.93:** a tile’s state is two lines under the price, as on every tile and card — the ' +
+          '**States:** a tile’s state is two lines under the price, as on every tile and card — the ' +
           'icon and the state (“Unavailable”, “Low stock”; `stock.label` or the provider’s words), ' +
           'the detail under it (“Sold out”, “3 left”).\n\n' +
           '**When:** the product area of PosShell; a kiosk’s menu.\n\n' +
@@ -78,7 +78,7 @@ type Story = StoryObj<typeof meta>
 
 /**
  * Every product under "All": stock low, the last one, and one sold out with its reason — each
- * state in two lines, the state with its icon and the detail under it (P5.93).
+ * state in two lines, the state with its icon and the detail under it.
  */
 export const Default: Story = {
   play: async ({ canvasElement }) => {

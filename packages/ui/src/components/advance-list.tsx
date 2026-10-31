@@ -13,12 +13,12 @@ import { SettlingValue } from './settling-value'
 import { StatusBadge, type Tone } from './status-badge'
 
 /*
- * AdvanceList (P5.28 item 21e). A buyer's open advance payments, to close on the final sale or
+ * AdvanceList: a buyer's open advance payments, to close on the final sale or
  * to refund. The advances, what was paid and what is still open, and the figure deducted from the
- * sale are the application's (D4: the list adds nothing).
+ * sale are the application's (the list adds nothing).
  * - A heading (h3 by default) with the count, then a row per advance (CandidateList's look): with
  *   `onSelectionChange` a checkbox at the start (chosen = deducted from this sale, the neutral
- *   selection, D17); the number (left to right, semibold), the day it was paid, its state in
+ *   selection); the number (left to right, semibold), the day it was paid, its state in
  *   words (a badge in the application's tone), the application's note; at the end what is open
  *   (semibold) and what was paid; with `onRefund` a "Refund advance <number>" button (neutral
  *   menu, 44px).

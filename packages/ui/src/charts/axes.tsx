@@ -2,7 +2,7 @@ import { TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 
 /*
- * The HTML axes of the charts drawn in our own SVG (P5.93 item 44: CandlestickChart, Heatmap,
+ * The HTML axes of the charts drawn in our own SVG (CandlestickChart, Heatmap,
  * MatrixChart). Text is HTML beside the plot, so it keeps the page's direction, its font and its
  * wrapping; the plot only draws marks. Each label hangs on a zero-size anchor at its place, so it
  * is centred on it in both directions without measuring.

@@ -30,17 +30,17 @@ import { usePhone } from './use-phone'
 import { Tooltip } from './popover'
 
 /*
- * KanbanBoard (BUILD-PLAN P5.7): cards in columns, moved by dragging, by the keyboard or from a
+ * KanbanBoard: cards in columns, moved by dragging, by the keyboard or from a
  * menu. The board shows what it is given and reports a move; the application decides.
  * - Columns 280px wide, 16px apart, from the leading edge; the board scrolls sideways inside its
  *   own box when they do not fit. A column is an area on surface.sunken (radius lg, 8px padding),
- *   not a card: the cards are the only cards (P4.9: no cards inside a card). Its heading (sm
+ *   not a card: the cards are the only cards (no cards inside a card). Its heading (sm
  *   semibold) with the application's count ("4 tasks", a count with its noun) at the end.
  * - A card (raised, border.default, radius md, 12px): the title (a link to the task when it has
- *   `href`), a description line, a link to the record it is about (kind, number and state, P4.9
- *   rule 7), then the due date (DueDate: always the date), the application's meta ("3 comments")
+ *   `href`), a description line, a link to the record it is about (kind, number and state),
+ *   then the due date (DueDate: always the date), the application's meta ("3 comments")
  *   and the assignee's avatar at the end. Cards 8px apart. An empty column says so.
- * - Dragging (decisions.md "Launchpad dragging is live", the rule for every drag): pointer
+ * - Dragging (live, the rule for every drag): pointer
  *   events, never the browser's drag and drop; a mouse drag starts after 4px, a touch after a
  *   250ms press without moving more than 8px (a swipe still scrolls). The card lifts (shadow lg,
  *   border.strong, the raised layer) and follows the pointer; the other cards make room with the
@@ -51,7 +51,7 @@ import { Tooltip } from './popover'
  * - The keyboard (WCAG 2.5.7, every drag has another way): each card's handle (GripVertical, 28px,
  *   named "Move: <title>", the instructions as its description). Space or Enter picks the card
  *   up; ArrowUp and ArrowDown move it within the column, the arrow pointing forward in the
- *   reading direction to the next column (B.7); Space or Enter drops it, Escape cancels. Each step
+ *   reading direction to the next column; Space or Enter drops it, Escape cancels. Each step
  *   is announced politely ("Software tasks: In progress, position 2 of 3").
  * - The menu (MoreHorizontal, 28px): "Move to" the other columns (the card goes to the end),
  *   Move up, Move down. On phones it is the main way.
@@ -580,7 +580,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
           style={extraRoom > 0 ? { paddingBottom: extraRoom } : undefined}
         >
           {placeholder !== null && (
-            // Where the dragged card lands: neutral, never blue (D17).
+            // Where the dragged card lands: neutral, never blue.
             <li
               aria-hidden="true"
               data-slot="kanban-drop-placeholder"

@@ -1,9 +1,9 @@
 /*
- * Story data of PageViewer and RecognizedField (P5.31): fictitious. A document's pages are drawn
+ * Story data of PageViewer and RecognizedField: fictitious. A document's pages are drawn
  * here as SVG and passed as `data:` URIs, so a picture never waits for the network and is the same
  * every time — as the application's own images of a scan or a PDF page would be. The ink is
  * `currentColor` (black in an image) on a white sheet; grey is black at a lower opacity. Not part
- * of the package: nothing in src/index.ts imports this file. The example screens (P5.31) draw
+ * of the package: nothing in src/index.ts imports this file. The example screens draw
  * their invoice with `pageUri` too.
  */
 import type { PageRegion, ViewerPage } from './page-viewer-logic'

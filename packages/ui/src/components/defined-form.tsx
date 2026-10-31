@@ -50,7 +50,7 @@ export type {
 } from './defined-form-logic'
 
 /*
- * DefinedForm (BUILD-PLAN P5.66): a form drawn from the application's field definitions — the
+ * DefinedForm: a form drawn from the application's field definitions — the
  * JSON the application keeps for a document type, a report to an authority, a request. The
  * definitions are data (types, labels, options, required, sections, conditions; the logic and its
  * rules in defined-form-logic.ts); the form is the library's own parts, so it looks and behaves
@@ -68,12 +68,12 @@ export type {
  * - **The application's own checks** come back as `errors` by field id and are shown under their
  *   fields, before a missing value's words.
  * - `readOnly` shows the whole form read-only (a document numbered or sent for signature): every
- *   field in the read-only look, no hints, no required marks (P5.93).
+ *   field in the read-only look, no hints, no required marks.
  * - `lang`: the language of the definitions' texts when it is not the page's ("sr-Latn" on an
- *   English page): labels, hints, section titles and every option carry it (D15), select and
+ *   English page): labels, hints, section titles and every option carry it, select and
  *   multiselect options through their `lang`.
  * - `loading` (the definitions are on their way): a card of skeleton fields, busy. No sections
- *   and not loading: an EmptyState that says there is nothing to fill in (P5.93 item 2: a loading
+ *   and not loading: an EmptyState that says there is nothing to fill in (a loading
  *   state is always visible, an empty one says something).
  * Nothing is computed, saved or rendered as a document here: the preview of the document is the
  * application's (DocumentFrame beside the form).
@@ -120,13 +120,13 @@ export interface DefinedFormProps {
   errors?: Readonly<Record<string, string>>
   /** Shows the missing values from the start (a draft opened again, a step already tried). */
   showMissing?: boolean
-  /** The whole form read-only: every field in the read-only look (P5.93). */
+  /** The whole form read-only: every field in the read-only look. */
   readOnly?: boolean
   /** The definitions are on their way: skeleton fields. */
   loading?: boolean
   /** Draws a field of type 'custom'. Without it such a field is left out. */
   renderCustom?: (field: DefinedField, control: DefinedCustomControl) => ReactNode
-  /** The language of the definitions' texts, when not the page's (D15). */
+  /** The language of the definitions' texts, when not the page's. */
   lang?: string
   /** The heading level of the section titles. Default 3. */
   headingLevel?: 2 | 3 | 4 | 5 | 6

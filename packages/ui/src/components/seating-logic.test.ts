@@ -191,7 +191,7 @@ describe('the guest list', () => {
   })
 })
 
-describe('seatingChanges (P5.28 item 9)', () => {
+describe('seatingChanges', () => {
   const SAVED: SeatingGuest[] = [
     { id: 'a', name: 'Ana', seat: { tableId: 't1', seat: 1 } },
     { id: 'b', name: 'Ivan', seat: null },

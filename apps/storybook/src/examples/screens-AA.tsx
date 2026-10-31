@@ -15,7 +15,7 @@ import {
 } from './data-AA'
 
 /*
- * Group AA's example screen (P5.37, the project timeline): Kvadrat Gradnja d.o.o.'s
+ * The example screen (the project timeline): Kvadrat Gradnja d.o.o.'s
  * "Residential building Liman 4" on 14.10.2026 at 09:40, in the company's shell (Projects). Above
  * the plan its figures (the application's totals); the plan itself is Gantt from
  * `@veljaos/ui/gantt`: nine phases with their tasks, milestones and dependencies, each phase's
@@ -42,7 +42,7 @@ function ProjectTimeline({
   const report = (change: GanttChange) => {
     const before = model
     setModel(applyPlanChange(model, change))
-    // A move is reversible: a toast that closes by itself, with Undo, never a confirmation (P5.90).
+    // A move is reversible: a toast that closes by itself, with Undo, never a confirmation.
     if (change.type === 'dates') {
       notice.success(
         `${label(change.id)} now runs ${format.date(change.start)} – ${format.date(change.end)}`,

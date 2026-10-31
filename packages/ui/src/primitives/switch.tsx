@@ -6,11 +6,11 @@ import { cn } from './cn'
 /**
  * An on/off switch (shadcn/ui switch, adapted; Mantine Switch.css, size 'sm'): a 38×20px track,
  * fully rounded, with a 14px white thumb 2.5px from the edge. Off: the track is filled with
- * border.control (owner's decision: Mantine's gray-3 did not meet 3:1); on: brand.solid.
+ * border.control (Mantine's gray-3 did not meet 3:1); on: brand.solid.
  * Disabled: surface.disabled. The thumb carries a dot 40% of its size in the track's colour
- * (withThumbIndicator, on by default; added in P2.2a). The thumb moves along the inline axis, so it starts at the
+ * (withThumbIndicator, on by default). The thumb moves along the inline axis, so it starts at the
  * leading edge in both directions (150ms). An invisible 2px margin makes the target 24px high.
- * `readOnly` (P5.93): the disabled look with a border.default line and the thumb in
+ * `readOnly`: the disabled look with a border.default line and the thumb in
  * text.secondary at its side, focusable; the caller keeps the state from changing.
  */
 export function Switch({

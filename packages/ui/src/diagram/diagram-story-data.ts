@@ -128,7 +128,7 @@ export const NIGHTLY_FAILED: DiagramRun = {
     savings: {
       state: 'failed',
       reason: 'The bank did not answer in 30 s.',
-      // The step's log (P5.93), shown on request as a small CodeBlock.
+      // The step's log, shown on request as a small CodeBlock.
       log: [
         '02:01:02 GET /statements?account=savings&date=2026-10-05',
         '02:01:32 No answer within 30 s (timeout)',

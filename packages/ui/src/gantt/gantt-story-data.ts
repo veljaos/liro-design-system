@@ -2,7 +2,7 @@ import { expect, waitFor } from 'storybook/test'
 import type { GanttDependency, GanttTask } from './gantt-logic'
 
 /*
- * Gantt's story data (P5.37): a fictitious warehouse extension in phases, tasks and milestones,
+ * Gantt's story data: a fictitious warehouse extension in phases, tasks and milestones,
  * on 14 October 2026 at 09:40 (the stories' `today` and `now`). Budgets are the application's
  * figures (decimal strings), never computed by the plan. Not part of the package.
  */

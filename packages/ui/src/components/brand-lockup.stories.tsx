@@ -25,7 +25,7 @@ const meta = {
   },
   args: { ...LIRO_BRAND, href: '#home' },
   // The lockup stands on the header or on a raised surface (status pages, sign-in): the logo
-  // colour reaches 4.53:1 on them, not on the grey page (P4.1).
+  // colour reaches 4.53:1 on them, not on the grey page.
   decorators: [
     (Story) => (
       <div className="box-border inline-block rounded-md bg-surface-raised p-4">

@@ -31,15 +31,15 @@ import { usePhone } from './use-phone'
 import { WizardFooter } from './wizard-footer'
 
 /*
- * ImportWizard (BUILD-PLAN P5.19, bulk work on catalogue lists): records from a CSV or Excel
+ * ImportWizard (bulk work on catalogue lists): records from a CSV or Excel
  * file in four steps — File, Columns, Check, Import — with nothing saved before the last one.
  * One card: the Stepper as its first row, the step's content, and the buttons at the bottom
  * (Back, then the step's main action last; Cancel at the start when the application offers it).
  * - **File:** what the file may be (types, size, the first row as headings — the application's
- *   text) is shown BEFORE choosing; a button chooses the file (a plain file input until
- *   FileDropzone, P5.5, replaces it); the application reads it (`reading`) and reports its name
+ *   text) is shown BEFORE choosing; a FileDropzone chooses the file; the application reads it
+ *   (`reading`) and reports its name
  *   and size in words, or an error (`fileError`): a file that cannot be read shows that error
- *   in words, never its raw content, and Next waits for another file (P5.90 item 7).
+ *   in words, never its raw content, and Next waits for another file.
  * - **Columns:** one row per catalogue field — the field (required ones marked), the file's
  *   column that fills it (a select; "Not imported" when none), a sample value from that column.
  *   The application suggests a mapping (`suggested` marks those fields); a column fills one field
@@ -52,11 +52,11 @@ import { WizardFooter } from './wizard-footer'
  *   problems under it (icon and words in the tone's colour), and the row's own problems. Import
  *   stays unavailable while rows have errors and they are not skipped.
  * - **File:** a FileDropzone for one file (the button, or a drop), the types and the size limit
- *   said before choosing, the file checked again on the device (P5.5).
- * - **Import:** JobProgress while it runs ("312 of 1.284", P5.4), then the application's report.
+ *   said before choosing, the file checked again on the device.
+ * - **Import:** JobProgress while it runs ("312 of 1.284"), then the application's report.
  * The parsing and the checking are the application's; the wizard decides nothing about the data.
  *
- * Phones (P5.23, the owner's review): the Stepper is one line, "Step 3 of 4 · Check", over a thin
+ * Phones: the Stepper is one line, "Step 3 of 4 · Check", over a thin
  * bar; the counts are a list, one per line; the buttons are ONE row stuck to the bottom of the
  * screen — Back, then the main action — and an unavailable action's reason is one line under it;
  * Cancel becomes a close button (X) in the header. Leaving once a file is chosen asks first
@@ -103,7 +103,7 @@ export interface ImportWizardProps {
   /**
    * The file could not be read (a damaged file, a binary file named .csv), in the application's
    * words. Shown under the drop zone as the file's error; nothing read from the file is shown and
-   * Next stays unavailable until another file is read (P5.90 item 7).
+   * Next stays unavailable until another file is read.
    */
   fileError?: string
   /** The file's columns, as the application read them. */
@@ -237,7 +237,7 @@ export function ImportWizard(props: ImportWizardProps) {
       />
       {props.reading === true && <Spinner size="sm">{messages['field.loading']}</Spinner>}
       {/* A file the application could not read shows only its error (FileDropzone's), never
-          what was read from it (P5.90 item 7). */}
+          what was read from it. */}
       {props.file !== undefined && props.reading !== true && !unreadable && (
         <p className="m-0 flex min-w-0 flex-col gap-0.5">
           <span className={cn('text-sm font-semibold break-words text-primary', TEXT_DIRECTION)}>
@@ -429,14 +429,14 @@ export function ImportWizard(props: ImportWizardProps) {
           checked={props.skipInvalid}
           onChange={props.onSkipInvalidChange}
         />
-        {/* The refetch shows here, not as a strip between the line and the table (P5.23). */}
+        {/* The refetch shows here, not as a strip between the line and the table. */}
         {(!phone || props.previewLoading === true) && (
           <span className={cn('flex items-center', !phone && 'ms-auto')}>
             <RefetchLoader active={props.previewLoading === true && props.previewRows.length > 0} />
           </span>
         )}
       </div>
-      {/* The list ends on the footer's one line, not a second line of its own (P5.93 item 4). */}
+      {/* The list ends on the footer's one line, not a second line of its own. */}
       <div className="-mx-4 -mb-4 border-0 border-t border-solid border-default">
         {props.problemsOnly && props.previewRows.length === 0 && props.previewLoading !== true ? (
           <p role="status" className={cn('m-0 px-4 py-6 text-sm text-secondary', TEXT_DIRECTION)}>

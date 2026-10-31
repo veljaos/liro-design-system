@@ -113,7 +113,7 @@ describe('filterValueText', () => {
     expect(text('total', { min: '10', max: null })).toBe('10.00 –')
   })
 
-  it('writes an amount range with its currency (P3.6)', () => {
+  it('writes an amount range with its currency', () => {
     const amount = { id: 'amount', label: 'Amount', type: 'numberRange' as const, currency: 'EUR' }
     expect(filterValueText(amount, { min: '10', max: '20.5' }, format, messagesEn)).toBe(
       `${format.money('10', 'EUR')} – ${format.money('20.5', 'EUR')}`,
@@ -192,7 +192,7 @@ describe('FilterBar', () => {
     expect(html).toContain('>Date ↓</span>')
   })
 
-  it('never repeats the label as the placeholder: an empty choice says "All" (P4.9)', () => {
+  it('never repeats the label as the placeholder: an empty choice says "All"', () => {
     const html = render(
       <FilterBar
         filters={FILTERS}
@@ -207,7 +207,7 @@ describe('FilterBar', () => {
     expect(html).not.toContain('>Status</span>')
   })
 
-  it('on phones puts search first and the list actions in one menu (P4.9)', () => {
+  it('on phones puts search first and the list actions in one menu', () => {
     const html = render(
       <FilterBar
         filters={FILTERS}

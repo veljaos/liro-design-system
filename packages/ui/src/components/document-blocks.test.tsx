@@ -72,7 +72,7 @@ describe('DocumentReferences', () => {
     expect(text(html)).toBe('Based on:ProformaPR-2026-031·AdvancesA-2026-038Paid, A-2026-044Paid')
     expect(html.match(/<a /g)).toHaveLength(3)
   })
-  it('names every link with its kind, number and state (P4.9 rule 7)', () => {
+  it('names every link with its kind, number and state', () => {
     const html = render(<DocumentReferences groups={groups} />)
     expect(html).toContain('aria-label="Proforma PR-2026-031"')
     expect(html).toContain('aria-label="Advance invoice A-2026-038, Paid"')
@@ -170,7 +170,7 @@ describe('CancellationBanner', () => {
     expect(text(html)).toContain(
       'Cancelled by Milica Petrović on 06.10.2026. at 11:20. Reason: Wrong prices. Cancellation document ST-2026-0004',
     )
-    // The word is said once (P5.23), and the banner takes the badge's danger tone, politely.
+    // The word is said once, and the banner takes the badge's danger tone, politely.
     expect(text(html)).not.toContain('Cancelled Cancelled')
     expect(html).toContain('href="#/st"')
     expect(html).toContain('role="status"')
@@ -220,7 +220,7 @@ describe('corrections', () => {
   })
 })
 
-describe('DocumentTotals (P5.18)', () => {
+describe('DocumentTotals', () => {
   it('ends with the recap, the deductions as links, the amount due, the rate and footnotes', () => {
     const html = render(
       <DocumentTotals
@@ -278,7 +278,7 @@ describe('DocumentTotals (P5.18)', () => {
     // An empty recap cell is a dash, never 0.
     expect(plain).toContain('E¹0,00——')
   })
-  it('keeps the P4.5 list when nothing new is asked, the deductions in it', () => {
+  it('keeps the plain list when nothing new is asked, the deductions in it', () => {
     const html = render(
       <DocumentTotals
         label="Totals"
@@ -292,7 +292,7 @@ describe('DocumentTotals (P5.18)', () => {
   })
 })
 
-describe('DataTable line types (P5.18)', () => {
+describe('DataTable line types', () => {
   interface Line {
     id: string
     type: LineType
@@ -352,7 +352,7 @@ describe('DataTable line types (P5.18)', () => {
   })
 })
 
-describe('DocumentPage block order (P5.18)', () => {
+describe('DocumentPage block order', () => {
   it('renders header → references → lines → specification → totals → notes → attachments', () => {
     const html = render(
       <DocumentPage

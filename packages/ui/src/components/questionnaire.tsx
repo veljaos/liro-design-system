@@ -52,7 +52,7 @@ import { Spinner } from './spinner'
 import { TextField } from './text-field'
 
 /*
- * Questionnaire (P5.1, owner 2026-10-07): a general step-by-step question component — guided
+ * Questionnaire: a general step-by-step question component — guided
  * document generation (an employment contract), the questions an agent asks (AgentQuestion), a
  * guided form. On the shadcn/ui Questionnaire primitive (`primitives/questionnaire.tsx`): each
  * question is a fieldset named by its legend; choices are real radio buttons and checkboxes; the
@@ -434,7 +434,7 @@ export function Questionnaire(props: QuestionnaireProps) {
   })
 
   /**
-   * The keys (P5.90 item 10): 1–9 choose the numbered option, Enter goes on (a typed answer was
+   * The keys: 1–9 choose the numbered option, Enter goes on (a typed answer was
    * read by its field's own Enter, just before this: use what it reported). True when handled.
    */
   const pressKey = (event: {
@@ -480,7 +480,7 @@ export function Questionnaire(props: QuestionnaireProps) {
       })
     ) {
       // A handled key stops here: a page-wide shortcut on the same key (Storybook's "1", an
-      // application's own) must not take the focus away before the next key (P5.94 item 9).
+      // application's own) must not take the focus away before the next key.
       event.preventDefault()
       event.stopPropagation()
     }
@@ -631,7 +631,7 @@ export function Questionnaire(props: QuestionnaireProps) {
         </section>
       )}
 
-      {/* One row, never stacked (P5.23): a long label wraps inside its button (P2.7d). */}
+      {/* One row, never stacked: a long label wraps inside its button. */}
       <div className="flex flex-nowrap items-center gap-2 [&>*]:min-w-0">
         {previousStep(path, step) !== null && (
           <Button

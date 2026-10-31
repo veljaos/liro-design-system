@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react'
 
 /*
- * The screen the components are drawn on (P5.28 items 1, 5 and 11). In an application it is the
+ * The screen the components are drawn on. In an application it is the
  * browser's viewport, and nothing sets it. A frame that stands for a phone's screen inside a wider
  * page (the stories' PhoneFrame) sets it, so the components inside behave as on a phone:
  * - `phone`: usePhone() answers true (the frame is a phone's width whatever the window's);

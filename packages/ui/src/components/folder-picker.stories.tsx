@@ -16,7 +16,7 @@ const meta = {
         component:
           '**What for:** choosing the folder to move or copy files to — the keyboard’s and the ' +
           'menu’s way for every drag onto a folder (WCAG 2.5.7). The action as the title, what ' +
-          'is moved bold under it (D22), the folders as a tree with one choice (neutral), the ' +
+          'is moved bold under it, the folders as a tree with one choice (neutral), the ' +
           'destination in words, Cancel and the action. The moved folders and the folders inside ' +
           'them cannot be chosen and say why; the folder the items are in cannot be the ' +
           'destination. `FolderPicker` is the tree alone, for a form.\n\n' +

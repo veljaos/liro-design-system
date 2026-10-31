@@ -9,30 +9,30 @@ import { Skeleton } from './progress'
 import { usePhone } from './use-phone'
 
 /*
- * ValueComparison (BUILD-PLAN P5.33): the same things as two sources record them, side by side,
+ * ValueComparison: the same things as two sources record them, side by side,
  * the differences marked — our open items beside a partner's, a record beside its copy, a
  * document's fields beside what the other side sent. It compares nothing: which rows differ, and
  * why, is the application's (`differs`, `note`).
- * - Desktop: a table — the row's name (sm medium), the two sources' values (sm, numbers tabular
- *   at the end of their cell), then the result in words: "Same" with a Check in text.secondary,
+ * - Desktop: a table — the row's name (sm medium), the two sources' values (sm, figures tabular),
+ *   then the result in words: "Same" with a Check in text.secondary,
  *   or "Differs" (or the application's `note`: "Only in their statement") with a TriangleAlert in
  *   status.warning.fg, weight 500. A differing row lies on status.warning.bg — with the icon and
  *   the words, never colour alone. Above it "2 of 5 differ", politely announced as rows change.
  * - Phones (`layout`, default below 48em): one card per row, each value labelled with its
  *   source's name, the result under them.
- * - Two sources, or three (P5.49: a purchase order, its goods receipt and the supplier's invoice
+ * - Two sources, or three (a purchase order, its goods receipt and the supplier's invoice
  *   side by side — the three-way match); every row has one value per source.
  * - A value the source does not have is the application's words ("Not in our books"); `null`
  *   shows "—". Loading: three skeleton rows; no rows: `empty` ("Nothing to compare").
- * - Choosing the values to keep (P5.79, merging two records): with `onChoose`, each differing
+ * - Choosing the values to keep (merging two records): with `onChoose`, each differing
  *   row's values are radio buttons (one group per row; the arrows move between them), the whole
- *   cell the target; the chosen value is the neutral selection (D17: surface.selected with the
+ *   cell the target; the chosen value is the neutral selection (surface.selected with the
  *   3px border.selected bar, only the radio blue). A row still to choose lies on
  *   status.warning.bg with "Choose the value to keep"; a chosen one says "Chosen". The count
  *   reads "2 of 3 chosen". With `chosen` and no `onChoose` the choices are shown, not changed (a
  *   merge's summary): the kept value carries a check. The application decides what a merge keeps
  *   and checks the choice; the comparison only reports it.
- * - P5.93 (items 18 and 19, the owner's fourth review): **one alignment for every column** — the
+ * - **One alignment for every column** — the
  *   values at the start of their cells, figures in tabular digits, so the sources compare at a
  *   glance (start alignment is the rule). **Merging** is simple first: while choosing, only the
  *   differing fields are listed ("Show identical fields" brings back the rest,
@@ -44,7 +44,7 @@ import { usePhone } from './use-phone'
  *   confirmation, it cannot be undone — is the application's.
  */
 
-/** The sources' names or values: two, or three (P5.49). */
+/** The sources' names or values: two, or three. */
 export type ComparisonValues =
   readonly [ReactNode, ReactNode] | readonly [ReactNode, ReactNode, ReactNode]
 
@@ -67,7 +67,7 @@ export interface ValueComparisonProps {
   label: string
   /**
    * The sources' names ("Our books", "Their statement"): two, or three ("Order", "Receipt",
-   * "Invoice"; P5.49). Each row gives a value for every source.
+   * "Invoice"). Each row gives a value for every source.
    */
   columns: ComparisonValues
   rows: readonly ComparisonRow[]
@@ -80,24 +80,24 @@ export interface ValueComparisonProps {
   /** Shown instead of the rows when there are none. Default `messages['comparison.empty']`. */
   empty?: ReactNode
   /**
-   * P5.79: the value kept from each differing row, as the index of its source in `columns`
+   * The value kept from each differing row, as the index of its source in `columns`
    * (row id → index). With `onChoose` the differing rows are choices; without it, shown.
    */
   chosen?: Readonly<Record<string, number>>
-  /** P5.79: the user chose a row's value (the index of its source). */
+  /** The user chose a row's value (the index of its source). */
   onChoose?: (rowId: string, index: number) => void
   /**
-   * P5.93: "Keep all from …" — one button per source; the application keeps that source's value
+   * "Keep all from …" — one button per source; the application keeps that source's value
    * in every differing row. Shown while choosing (`onChoose`).
    */
   onChooseAll?: (index: number) => void
   /**
-   * P5.93: while choosing (`chosen` or `onChoose`), the identical rows are hidden behind "Show
+   * While choosing (`chosen` or `onChoose`), the identical rows are hidden behind "Show
    * identical fields"; true shows them at first. Default false.
    */
   defaultShowIdentical?: boolean
   /**
-   * P5.93: the merged record as it will be, under the comparison (every field with the value it
+   * The merged record as it will be, under the comparison (every field with the value it
    * keeps). Default true while choosing with `onChoose`.
    */
   preview?: boolean
@@ -115,7 +115,7 @@ export function valueComparisonCounts(rows: readonly Pick<ComparisonRow, 'differ
 }
 
 /**
- * How many of the rows the application marks as differing have a value chosen (P5.79), and how
+ * How many of the rows the application marks as differing have a value chosen, and how
  * many differ.
  */
 export function chosenCounts(
@@ -129,7 +129,7 @@ export function chosenCounts(
   }
 }
 
-/** Which rows are listed: while choosing, the identical ones only on request (P5.93). */
+/** Which rows are listed: while choosing, the identical ones only on request. */
 export function comparisonRowsShown<R extends Pick<ComparisonRow, 'differs'>>(
   rows: readonly R[],
   choosing: boolean,
@@ -147,7 +147,7 @@ export interface MergedField {
 }
 
 /**
- * The merged record as the choices make it (P5.93): an identical row keeps its value (the
+ * The merged record as the choices make it: an identical row keeps its value (the
  * first source's: the application says they are the same), a differing row the chosen source's,
  * or nothing yet. Picks values; compares and computes nothing.
  */
@@ -166,7 +166,7 @@ export function mergedFields(
   })
 }
 
-/** The kept value of a merge: the neutral selection with its bar at the start (D17). */
+/** The kept value of a merge: the neutral selection with its bar at the start. */
 const CHOSEN_CELL =
   "relative bg-surface-selected before:absolute before:inset-y-0 before:start-0 before:border-0 before:border-s-[3px] before:border-solid before:border-selected before:content-['']"
 
@@ -423,7 +423,7 @@ export function ValueComparison(props: ValueComparisonProps) {
                 {row.label}
               </span>
               {choosable(row) ? (
-                // P5.79, P5.93: on a phone the values are the choices, stacked as large targets,
+                // On a phone the values are the choices, stacked as large targets,
                 // each with its source; the kept one says so.
                 <div
                   role={props.onChoose === undefined ? undefined : 'radiogroup'}
@@ -504,7 +504,7 @@ export function ValueComparison(props: ValueComparisonProps) {
             <caption className="sr-only">{props.label}</caption>
             <thead>
               <tr className="border-0 border-b border-solid border-default">
-                {/* P5.93: every heading at the start, over values at the start. */}
+                {/* Every heading at the start, over values at the start. */}
                 {[props.rowHeader ?? messages['comparison.item'], ...sources].map(
                   (heading, index) => (
                     <th

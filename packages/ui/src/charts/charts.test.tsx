@@ -160,7 +160,7 @@ describe('ChartSeriesToggle', () => {
   })
 })
 
-describe('the interactive header (P5.93 item 42)', () => {
+describe('the interactive header', () => {
   const toggle = (
     <ChartSeriesToggle
       label="Shown"
@@ -252,7 +252,7 @@ describe('centreValueSize', () => {
   })
 })
 
-describe('defaultCurve and equalTicks (P4.7c)', () => {
+describe('defaultCurve and equalTicks', () => {
   it('draws straight segments up to 31 points and smooth ones beyond', () => {
     expect(defaultCurve(6)).toBe('linear')
     expect(defaultCurve(31)).toBe('linear')

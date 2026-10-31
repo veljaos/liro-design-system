@@ -3,19 +3,19 @@ import { TEXT_DIRECTION } from './classes'
 import { cn } from './cn'
 
 /*
- * Bubble (shadcn/ui `bubble`, registry style radix-vega, fetched 2026-10-08; adapted as the P2.1
- * primitives). A message's box, placed at the start or the end of its row.
+ * Bubble (shadcn/ui `bubble`, registry style radix-vega, adapted to the Liro tokens). A message's
+ * box, placed at the start or the end of its row.
  *
  * Adapted:
- * - **No blue bubbles (D17).** shadcn's variants (default = the primary colour, secondary, muted,
+ * - **No blue bubbles.** shadcn's variants (default = the primary colour, secondary, muted,
  *   tinted, outline, ghost, destructive) are replaced by four neutral surfaces: `raised` (the
  *   raised surface with a border.default line: other people's messages), `sunken`
  *   (surface.sunken: the user's own messages), `note` (surface.sunken with a dashed
- *   border.strong line: an internal note only the team sees, P5.30) and `ghost` (no box: a message whose content is a
- *   larger part, such as a questionnaire). Own and others' messages differ by their side and
- *   surface, never by colour alone; the author is always named for assistive technology.
+ *   border.strong line: an internal note only the team sees) and `ghost` (no box: a message whose
+ *   content is a larger part, such as a questionnaire). Own and others' messages differ by their
+ *   side and surface, never by colour alone; the author is always named for assistive technology.
  * - Radius lg (12px, shadcn's rounded-xl is 12px too), padding 8px 12px, 13px text (sm), the
- *   text direction from its content (TEXT_DIRECTION, P3.6); long words break only as a last
+ *   text direction from its content (TEXT_DIRECTION); long words break only as a last
  *   resort (`break-words`).
  * - `text-left` → `text-start`. shadcn's `asChild` (a pressable bubble) is not kept: Liro bubbles
  *   are not buttons; actions on a message are buttons of their own.
@@ -40,7 +40,7 @@ const SURFACES: Record<BubbleSurface, string> = {
     '*:data-[slot=bubble-content]:border-default *:data-[slot=bubble-content]:bg-surface-raised',
   sunken:
     '*:data-[slot=bubble-content]:border-transparent *:data-[slot=bubble-content]:bg-surface-sunken',
-  // An internal note (P5.30): sunken with a dashed border.strong line, distinct from both the
+  // An internal note: sunken with a dashed border.strong line, distinct from both the
   // others' and the user's own messages by its line and its "Internal" mark, never by colour.
   note: '*:data-[slot=bubble-content]:border-dashed *:data-[slot=bubble-content]:border-strong *:data-[slot=bubble-content]:bg-surface-sunken',
   ghost:

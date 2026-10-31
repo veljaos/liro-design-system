@@ -2,8 +2,8 @@ import { fold, words } from '../components/command-logic'
 import type { Tone } from '../components/status-badge'
 
 /*
- * The logic of the company switcher (P4.1, scaled in P4.9 for an accountant's thousands of
- * companies), kept apart from the markup so it can be unit-tested (AGENTS.md C7): which companies
+ * The logic of the company switcher (built for an accountant's thousands of companies), kept
+ * apart from the markup so it can be unit-tested: which companies
  * match the search, and in which sections they stand — pinned first, then recent, then all.
  */
 
@@ -21,7 +21,7 @@ export interface ShellCompany {
   status?: { label: string; tone: Tone }
   /**
    * A short note at the end of the row, written by the application with its own count and words
-   * ("5 tasks"). A bare number is never shown: it did not say what it counts (P4.9).
+   * ("5 tasks"). A bare number is never shown: it does not say what it counts.
    */
   note?: string
 }

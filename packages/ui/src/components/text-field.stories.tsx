@@ -14,10 +14,10 @@ const meta = {
           '**What for:** one line of free text: a name, an e-mail, a reference. Label, optional ' +
           'description, the error under the field, and read only. Paste is ' +
           'always allowed. TextAreaField is the multi-line version.\n\n' +
-          '**When not:** numbers, amounts and dates (NumberField, MoneyField, DateField, P2.3); a ' +
+          '**When not:** numbers, amounts and dates (NumberField, MoneyField, DateField); a ' +
           'choice from a list (SelectField, ComboboxField). Read only is for a value the user may ' +
           'see but not change: the grey look of every field, no hint, an empty value "—". A ' +
-          'field has no disabled state (P5.93).',
+          'field has no disabled state.',
       },
     },
   },
@@ -79,7 +79,7 @@ export const LongTextPhone: Story = {
 }
 
 /**
- * Text without a single space at phone width (an IBAN, a URL, a long word; P5.90 item 7): the
+ * Text without a single space at phone width (an IBAN, a URL, a long word): the
  * label, the hint and the error wrap inside the field; a read-only text area wraps its value.
  */
 export const UnbrokenPhone: Story = {

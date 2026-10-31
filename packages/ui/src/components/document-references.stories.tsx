@@ -13,16 +13,16 @@ const meta = {
       description: {
         component:
           '**What for:** the documents a document is based on, in one line of links between ' +
-          'its header and its lines (P5.18): "Based on: Proforma PR-2026-031 · Advances ' +
+          'its header and its lines: "Based on: Proforma PR-2026-031 · Advances ' +
           'A-2026-038, A-2026-044 · Contract 12/2026". Each kind and its numbers come from the ' +
           'application; every number is a link through the provider’s `linkComponent`.\n\n' +
-          '**A reference shows its kind, number and state** (P4.9 rule 7): the state stands ' +
+          '**A reference shows its kind, number and state**: the state stands ' +
           'after the number as small text in its tone’s colour — the words carry it — and the ' +
           'link’s accessible name says all three ("Advance invoice A-2026-038, Paid"). The ' +
           'line wraps on narrow screens; a kind without numbers is left out.\n\n' +
           '**When:** a final invoice (proforma, advances, contract, order, delivery notes).\n\n' +
           '**When not:** the source of a correcting or cancelling document — it stands in the ' +
-          'header beside the customer (`DocumentSource`, DocumentPage `source`; P5.23), never ' +
+          'header beside the customer (`DocumentSource`, DocumentPage `source`), never ' +
           'in this line; a side panel list of related documents with their badges ' +
           '(`RelatedDocuments`); a single link inside a sentence.',
       },

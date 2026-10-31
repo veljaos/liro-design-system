@@ -7,7 +7,7 @@ import { useLiro } from '../provider/liro-provider'
 import { Spinner } from './spinner'
 
 /*
- * LinkSuggestions (BUILD-PLAN P5.30 d): pages the application proposes while the user writes —
+ * LinkSuggestions: pages the application proposes while the user writes —
  * help articles while a customer describes a problem, similar answers while an agent writes one.
  * The application searches (after a pause in typing, as ComboboxField's 300ms) and gives the
  * suggestions; the list only shows them. It never blocks what the user is doing: it takes no
@@ -21,7 +21,7 @@ import { Spinner } from './spinner'
  *   warning).
  * - While the application searches (`loading`) a small spinner and "Looking for suggestions…"
  *   stand under the title; the earlier suggestions stay until new ones arrive.
- * - Without suggestions and not loading, the box says what it is for (P5.93 item 2: an empty state
+ * - Without suggestions and not loading, the box says what it is for (an empty state
  *   says something useful): its title and one quiet line, "No matching pages yet. They appear
  *   here as you write." (`emptyText`, default from messages). The count is announced politely
  *   ("3 suggestions", "No suggestions") as it changes.
@@ -40,7 +40,7 @@ export interface LinkSuggestion {
   summary?: ReactNode
   /** A line of context above the title ("E-invoicing"). */
   meta?: ReactNode
-  /** The language tag of the title and summary when it differs from the page's (D15). */
+  /** The language tag of the title and summary when it differs from the page's. */
   lang?: string
 }
 

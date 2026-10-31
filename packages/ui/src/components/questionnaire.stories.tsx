@@ -111,7 +111,7 @@ export const Keyboard: Story = {
     await expect(canvas.getByRole('radio', { name: /Fixed term/ })).toBeChecked()
     await expect(canvas.getByText('1 of 6 answered')).toBeVisible()
     await userEvent.keyboard('{Enter}')
-    // A typed answer's field takes the focus with its question: type at once (P5.90 item 10).
+    // A typed answer's field takes the focus with its question: type at once.
     const ends = canvas.getByRole('group', { name: 'When does it end?' })
     await waitFor(() => expect(within(ends).getByRole('textbox')).toHaveFocus())
     await userEvent.keyboard('31.12.2027{Enter}')
@@ -144,8 +144,8 @@ export const Keyboard: Story = {
 
 /**
  * The number keys with nothing focused (the page has just opened): 1–9 choose the numbered option
- * (its number at the option's end), a second number changes the choice, Enter goes on (P5.90 item
- * 10). A key the questionnaire handled stops there (P5.94 item 9): the play stands in for a
+ * (its number at the option's end), a second number changes the choice, Enter goes on. A
+ * key the questionnaire handled stops there: the play stands in for a
  * page-wide shortcut on the digits (Storybook's "1" focuses its sidebar) that would take the focus
  * away before Enter.
  */

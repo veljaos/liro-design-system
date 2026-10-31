@@ -6,7 +6,7 @@ import { cn } from './cn'
  * An avatar (shadcn/ui avatar, adapted; Mantine Avatar.css, size 'md'): a 38px circle; the
  * picture covers it; without one, the fallback (initials or an icon) is bold, 16px (Mantine:
  * 38 / 2.5 = 15.2px; the nearest A.5 size), in the neutral tone (Mantine's default is the light
- * gray variant). shadcn/ui's avatar group is left to the components that need it (P2.8, P5.2).
+ * gray variant). shadcn/ui's avatar group is left to the components that need it.
  */
 
 export function Avatar({ className, ...props }: ComponentProps<typeof AvatarPrimitive.Root>) {

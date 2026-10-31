@@ -8,13 +8,13 @@ import { useLiro } from '../provider/liro-provider'
 import type { ChartCategory, ChartSeries, ChartStateProps, ChartValues } from './shared'
 
 /*
- * The card every chart stands in (P4.6, kept in P4.7a): radius lg, border.default, padding md, no
+ * The card every chart stands in: radius lg, border.default, padding md, no
  * shadow; the title (h3, sm semibold) and a description under it; the application's controls (a
  * time range) and the 28px "Show as table" / "Show as chart" button at the end of the header; the
  * legend; the plot. On phones the header stacks (the controls under the title) and the legend
  * stands under the plot.
  *
- * The interactive header (P5.93 item 42, shadcn/ui's "Bar Chart - Interactive"): with `toggle`
+ * The interactive header (shadcn/ui's "Bar Chart - Interactive"): with `toggle`
  * (a ChartSeriesToggle) the header is a band of its own, flush with the card and ruled off from
  * the plot: the title and description at the start, the key figures as toggle buttons at the
  * end, full height, a line between each; on phones the toggles stand under the title, across the
@@ -32,7 +32,7 @@ export type ChartSkeletonShape = 'columns' | 'bars' | 'round' | 'block'
 
 const COLUMN_HEIGHTS = [46, 62, 54, 78, 66, 88, 72, 58, 80, 70, 92, 64]
 
-/** A chart-shaped placeholder: columns, bars (horizontal), a ring, or one block (a map, P5.41). */
+/** A chart-shaped placeholder: columns, bars (horizontal), a ring, or one block (a map). */
 function ChartSkeleton({ shape, height }: { shape: ChartSkeletonShape; height: number }) {
   if (shape === 'block') {
     return <Skeleton className="w-full rounded-md" style={{ height }} />
@@ -77,7 +77,7 @@ export interface ChartCardProps extends ChartStateProps {
   controls?: ReactNode
   /**
    * The key figures as toggle buttons (a ChartSeriesToggle) at the header's end, flush with the
-   * card (P5.93 item 42); on phones under the title, across the width.
+   * card; on phones under the title, across the width.
    */
   toggle?: ReactNode
   legend?: ReactNode
@@ -237,7 +237,7 @@ export function ChartCard(props: ChartCardProps) {
 
 /**
  * The values as a table: the chart's text alternative and its "Show as table" view.
- * Right-to-left (P4.9, the owner's review: headers and columns stood on the wrong sides): a cell
+ * Right-to-left: a cell
  * keeps the page's direction and its `text-start` / `text-end`; only the text inside it is
  * isolated (an inline span or `bdi`), because `unicode-bidi: plaintext` on the cell itself
  * resolves start and end against the text — a header of digits ("2026") is left to right and
@@ -257,7 +257,7 @@ export function ValuesTable({
   series: readonly Pick<ChartSeries, 'key' | 'label'>[]
   values: ChartValues
   write: (value: string | null | undefined) => string
-  /** A series written its own way (a share that is already text, P5.93 item 44). */
+  /** A series written its own way (a share that is already text). */
   writeSeries?: Readonly<Record<string, (value: string | null | undefined) => string>>
   /** A total per category, from the application, as the last column. */
   total?: { label: string; values: Readonly<Record<string, string | null>> }

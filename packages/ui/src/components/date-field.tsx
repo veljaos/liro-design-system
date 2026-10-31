@@ -29,14 +29,14 @@ import { entryAttributes, entryError, useEntry, type EntryProps } from './use-en
 import { Tooltip } from './popover'
 
 /*
- * DateField and DateRangeField (BUILD-PLAN P2.3). A date is typed (read by `format.parseDate` on
+ * DateField and DateRangeField. A date is typed (read by `format.parseDate` on
  * leaving the field or on Enter: "010326", "1.3.2026", "01/03/2026", the locale's own form; a day
- * and a month alone, "7.10." or "0710", in the year of the provider's `today`, P5.94 item 2) or
+ * and a month alone, "7.10." or "0710", in the year of the provider's `today`) or
  * picked in the calendar; the value is YYYY-MM-DD. Both ends of a range are typed the same way;
  * the calendar is optional. The calendar opens on the provider's `today`
  * (the tenant's date), and its month and weekday names come from `format`.
  *
- * Owner's decisions (2026-09-28, docs/decisions.md "Numbers, money and dates"):
+ * Owner's decisions:
  * - The calendar opens only from the calendar button at the end of the field, or with Alt+ArrowDown
  *   in the field; typing never opens it (Mantine's DateInput opens it on focus). The focus moves
  *   into the calendar when it opens and back to the field when it closes; Escape closes it.
@@ -74,7 +74,7 @@ function useCalendarLabels(): CalendarLabels {
 
 /**
  * The typed entry of a date: read by `format.parseDate` ("7.10." in the provider's year of
- * `today`, P5.94 item 2), shown by `format.date`. Shared by DateField, both ends of
+ * `today`), shown by `format.date`. Shared by DateField, both ends of
  * DateRangeField and PeriodField's custom range (internal).
  */
 export function useDateEntry(props: EntryProps) {
@@ -354,8 +354,8 @@ export function DateRangeField(props: DateRangeFieldProps) {
 
   // A press anywhere in the frame that is not on an end or the calendar button (the dash, the
   // room before the button) puts the caret in the start while it is empty, else in the end:
-  // a range is typed like any field, and a press beside the two short ends did nothing before
-  // (P5.94 item 2). Listened to natively: the frame is not a control of its own.
+  // a range is typed like any field; a press beside the two short ends would otherwise do nothing.
+  // Listened to natively: the frame is not a control of its own.
   useEffect(() => {
     const box = boxRef.current
     if (box === null) return
@@ -423,7 +423,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
             </span>
           )
         if (control.readOnly) {
-          // The read-only look of every field; an empty range is one "—" (P5.93 item 1).
+          // The read-only look of every field; an empty range is one "—".
           return (
             <div data-slot="date-range" className={cn(INPUT, READ_ONLY, 'flex items-center')}>
               {names}

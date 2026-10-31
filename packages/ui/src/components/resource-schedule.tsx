@@ -46,7 +46,7 @@ import { usePhone } from './use-phone'
 import { Tooltip } from './popover'
 
 /*
- * ResourceSchedule (BUILD-PLAN P5.8): rows of resources — doctors, rooms, teachers — against the
+ * ResourceSchedule: rows of resources — doctors, rooms, teachers — against the
  * time of one day or a few days, bookings as blocks. The schedule shows what it is given and
  * reports a move (`onMove({ id, resourceId, start, end })`); it never decides whether a move is
  * allowed. Unavailable times (from props, with their reason) are hatched and neutral, named in
@@ -54,9 +54,9 @@ import { Tooltip } from './popover'
  * - Desktop: the names in a sticky column at the start (200px), the time running from the leading
  *   edge (right to left in right-to-left pages), 2px a minute, hour labels above, slot lines;
  *   the grid scrolls sideways inside its own box; the hours (and days) above stay below the
- *   shell while the page scrolls (P5.28 item 4, `useStickyHead`).
- * - Now (`now`, the application's clock, P5.28 item 10): only its time, on a small dark tag in the
- *   hours row (the gutter on phones), named "Now, 9:40 AM" (P5.94 item 16: no line across the
+ *   shell while the page scrolls (`useStickyHead`).
+ * - Now (`now`, the application's clock): only its time, on a small dark tag in the
+ *   hours row (the gutter on phones), named "Now, 9:40 AM" (no line across the
  *   rows); on a scale of days today's date in the header says it. Rows 56px;
  *   bookings that overlap share the row
  *   in lanes. A booking: the tone's colours (neutral by default) with a 3px bar at the start,
@@ -66,19 +66,19 @@ import { Tooltip } from './popover'
  *   was; Escape cancels); the keyboard on the booking (Space picks it up, the arrows move it by a
  *   slot or a row — the time arrows from the leading edge —, Enter or Space drops it, Escape or
  *   leaving it cancels; every step announced politely); or its "Move to…" button (a popover with
- *   the action and the booking bold under it (P5.28 item 6), the row, the day and the start, then
+ *   the action and the booking bold under it, the row, the day and the start, then
  *   Move).
- * - A move only proposes (P5.28 item 9): `onMove` reports it and the schedule draws nothing new
+ * - A move only proposes: `onMove` reports it and the schedule draws nothing new
  *   until the application changes `bookings`. A booking other people rely on (an appointment, a
  *   reservation) is confirmed by the application with ChangeConfirmDialog (old → new, "Notify …"
  *   as a choice, Cancel / Save) before it is moved or anyone is messaged.
  * - Phones (below 48em or `layout="phone"`): one row at a time, chosen in a select; the time runs
- *   down; Left and Right move a picked-up booking to the other rows. With `phoneLists` (P5.90
- *   item 19, the F7 phone rule: many rows, a hotel's 200 rooms) no timeline at all: the day's
+ *   down; Left and Right move a picked-up booking to the other rows. With `phoneLists` (many
+ *   rows, a hotel's 200 rooms) no timeline at all: the day's
  *   lists the application passes (arrivals, departures, in house), a list at a time with its
  *   count, a search, each booking a row that opens it (`onSelect`). Desktops and tablets keep the
  *   timeline.
- * - `scale="days"` (P5.25): stays over days — rooms, vehicles, equipment. Each day of `days` is a
+ * - `scale="days"`: stays over days — rooms, vehicles, equipment. Each day of `days` is a
  *   column (64px at least; 48px high on phones) under its weekday and date, today's date in the
  *   neutral circle; bookings and unavailable times are read by their days (a day value's `end`
  *   is its last day, included, as an all-day event's); a booking moves by whole days and keeps
@@ -107,7 +107,7 @@ export interface ScheduleBooking {
   /** Local "YYYY-MM-DDTHH:mm", shown as written (an instant with an offset in the provider's zone). */
   start: string
   end: string
-  /** A status tone (Appendix A.2); default neutral. */
+  /** A status tone; default neutral. */
   tone?: Tone
   /** This booking cannot be moved (e.g. it has started); it can still be opened. */
   locked?: boolean
@@ -153,7 +153,7 @@ export interface ResourceScheduleProps {
   /** 'phone' shows one row at a time with the time running down; default by the viewport. */
   layout?: 'desktop' | 'phone'
   /**
-   * Phones (P5.90 item 19): the day's lists instead of the timeline — "Arrivals", "Departures",
+   * Phones: the day's lists instead of the timeline — "Arrivals", "Departures",
    * "In house" — each with its bookings, chosen and counted by the application. For schedules
    * with many rows; the timeline stays on desktops and tablets.
    */
@@ -161,13 +161,13 @@ export interface ResourceScheduleProps {
   /** The phone lists' search label ("Search guests or rooms"). Default `schedule.search`. */
   phoneSearchLabel?: string
   /**
-   * 'days' (P5.25): one column a day over `days` (stays of several days: rooms, vehicles);
+   * 'days': one column a day over `days` (stays of several days: rooms, vehicles);
    * bookings are read by their days and moved by whole days, `dayStart`, `dayEnd` and
    * `slotMinutes` do not apply. Default 'time'.
    */
   scale?: 'time' | 'days'
   /**
-   * The application's clock (P5.28 item 10): "HH:mm" (a time of the provider's today), or an
+   * The application's clock: "HH:mm" (a time of the provider's today), or an
    * instant shown in the provider's time zone. Draws the "now" marker where the axis shows it.
    */
   now?: string
@@ -304,7 +304,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
       observer.disconnect()
     }
   }, [phone])
-  // The hours row stays below the shell while the page scrolls (P5.28 item 4).
+  // The hours row stays below the shell while the page scrolls.
   useStickyHead(grid, !phone && props.loading !== true)
   const unavailable = props.unavailable ?? []
 
@@ -802,9 +802,9 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                       BUTTON_RESET,
                       look,
                       FOCUS_RING,
-                      // Inside the booking (P5.96b): neighbours and the sticky names never cover it.
+                      // Inside the booking: neighbours and the sticky names never cover it.
                       'focus-visible:-outline-offset-2',
-                      // The library's hover: the tone's border drawn in its text colour (P5.93).
+                      // The library's hover: the tone's border drawn in its text colour.
                       'hover:border-current',
                       canMove ? 'cursor-grab select-none' : 'cursor-pointer',
                       isMoving && 'cursor-grabbing',
@@ -874,7 +874,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
 
   const resourceOf = props.resources[phoneRow]
 
-  // The application's clock on the axis (P5.28 item 10).
+  // The application's clock on the axis.
   const moment = props.now === undefined ? null : nowMoment(props.now, today, timeZone)
   const nowPlace = moment === null ? null : nowOnAxis(axis, moment)
   const nowAt =
@@ -980,7 +980,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                 className={cn(
                   'absolute end-2 text-xs whitespace-nowrap text-tertiary tabular-nums',
                   TEXT_ISOLATE,
-                  // Under the time of "now": out of sight (P5.93 item 8).
+                  // Under the time of "now": out of sight.
                   nowAt !== null &&
                     !byDay &&
                     tagCovers(along(nowAt.at), 10, along(hour.at), along(hour.at) + 20) &&
@@ -991,7 +991,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                 {hour.text}
               </span>
             ))}
-            {/* "Now" is only its time, in the gutter (P5.94 item 16): no line across the row. */}
+            {/* "Now" is only its time, in the gutter: no line across the row. */}
             {nowAt !== null && !byDay && (
               <NowTimeTag
                 orientation="horizontal"
@@ -1088,7 +1088,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                       {hour.text}
                     </span>
                   ))}
-                  {/* "Now" is only its time, in the hours row (P5.94 item 16): no line across the
+                  {/* "Now" is only its time, in the hours row: no line across the
                       rows; on a scale of days today's date in the header says it. */}
                   {nowAt !== null && !byDay && (
                     <NowTimeTag
@@ -1210,7 +1210,7 @@ function MoveTo({
         </Tooltip>
       </PopoverTrigger>
       <PopoverContent align="end" aria-label={title} className="flex w-72 flex-col gap-3">
-        {/* The action, then the booking it moves, bold on its own line (P5.28 item 6). */}
+        {/* The action, then the booking it moves, bold on its own line. */}
         <div className="flex flex-col gap-1">
           <p className={cn('m-0 text-sm font-semibold text-primary', TEXT_DIRECTION)}>
             {messages['schedule.moveToTitle']}

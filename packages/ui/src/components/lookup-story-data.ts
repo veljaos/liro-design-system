@@ -2,7 +2,7 @@ import type { TaxCategory, UnitOfMeasure } from './line-types'
 import type { LookupKind, LookupOption } from './lookup-logic'
 
 /*
- * A catalogue for the LookupField and EditableGrid stories (P5.18, P5.19): the items, services and
+ * A catalogue for the LookupField and EditableGrid stories: the items, services and
  * fixed assets of a construction-materials trader — fictitious, realistic Serbian names, codes and
  * stock — plus generated articles, so the catalogue holds tens of thousands of records as the
  * Core's would. The search plays the application's server. Not part of the package: nothing in

@@ -26,12 +26,12 @@ import {
 } from './shared'
 
 /*
- * Treemap (P5.93 item 44, owner: "expenses by account group"): parts of a whole as rectangles
+ * Treemap ("expenses by account group"): parts of a whole as rectangles
  * whose areas follow their values, optionally in groups, on Recharts' Treemap with our own blocks.
  * - Without groups every block is the main blue; with groups each group takes a hue of the
  *   categorical palette (they are the categories), named in the legend; a block that means a state
  *   takes its tone. Blocks are 2px apart (the card between them). Areas follow the values (drawing
- *   only, D4); a group's total and every share are the application's.
+ *   only); a group's total and every share are the application's.
  * - A block names itself on a small raised tag when the name fits (and its value under it when
  *   there is room); a smaller block leaves it out — the tooltip and the table say it, never cut.
  * - Right-to-left: the blocks are laid out from the right.
@@ -69,7 +69,7 @@ export interface TreemapProps extends ChartStateProps {
   /** The plot's height in pixels. Default 300 (260 on phones). */
   height?: number
   controls?: ReactNode
-  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end. */
   toggle?: ReactNode
   layout?: 'desktop' | 'phone'
   className?: string

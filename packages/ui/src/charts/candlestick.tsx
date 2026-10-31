@@ -19,7 +19,7 @@ import {
 import { shortTick, useFormatValue, type ChartStateProps } from './shared'
 
 /*
- * CandlestickChart (P5.93 item 44, owner: "exchange rate OHLC"): a price per period — open, high,
+ * CandlestickChart ("exchange rate OHLC"): a price per period — open, high,
  * low, close — as candles, drawn in our own SVG (Recharts has no candlestick).
  * - One meaning, the main blue; the direction is the shape, never colour alone: a rising candle
  *   (the close at or above the open, compared exactly as decimal strings) is hollow, a falling one
@@ -57,7 +57,7 @@ export interface CandlestickChartProps extends ChartStateProps {
   /** The legend that says which candles rose. Default true. */
   legend?: boolean
   controls?: ReactNode
-  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end. */
   toggle?: ReactNode
   /** Default: from the viewport (below 48em 'phone'). */
   layout?: 'desktop' | 'phone'

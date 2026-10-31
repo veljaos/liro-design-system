@@ -5,7 +5,7 @@ import { NoticeView, type NoticeKind } from './notice'
 
 const KINDS: NoticeKind[] = ['success', 'info', 'warning', 'error', 'loading']
 
-describe('NoticeView (P5.93 item 3)', () => {
+describe('NoticeView', () => {
   it('gives every toast a close button, also those that close by themselves', () => {
     for (const kind of KINDS) {
       const html = renderToStaticMarkup(

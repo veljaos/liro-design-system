@@ -7,7 +7,7 @@ import { parseTimeText } from './time-logic'
 import { entryAttributes, entryError, useEntry, type EntryProps } from './use-entry'
 
 /*
- * TimeField (P5.90 item 12): a time of day typed the quick way, as the date fields read "010326".
+ * TimeField: a time of day typed the quick way, as the date fields read "010326".
  * "630", "0630" and "6:30" become 06:30, "1430" becomes 14:30, "6:30 pm" 18:30; with `withSeconds`
  * "630" becomes 06:30:00. The text is read on leaving the field or on Enter (`parseTimeText`) and
  * shown again as the value, so the user sees at once what was understood. Unreadable text stays

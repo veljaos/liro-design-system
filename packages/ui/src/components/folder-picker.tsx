@@ -11,14 +11,14 @@ import { findTreeNode, type TreeNode } from './tree-logic'
 import { TreeView } from './tree-view'
 
 /*
- * FolderPicker and FolderPickerDialog (BUILD-PLAN P5.43): choose the folder to move or copy
+ * FolderPicker and FolderPickerDialog: choose the folder to move or copy
  * files to — the keyboard's and the menu's way for every drag onto a folder (WCAG 2.5.7).
- * - FolderPicker is TreeView with one choice (the neutral selection, D17): the application's
+ * - FolderPicker is TreeView with one choice (the neutral selection): the application's
  *   folders, opened where needed (lazy children through `onLoadChildren`). The folders being
  *   moved and every folder inside them cannot be chosen and say why (`moving`,
  *   `blockedFolders`); a folder the application closes says its own reason (`disabledReason`).
  * - FolderPickerDialog asks once: the action as its title ("Move to"), what is moved bold under
- *   it (`subject`, D22: "Ugovor_Stanogradnja.pdf" or "3 items"), the picker, then the
+ *   it (`subject`: "Ugovor_Stanogradnja.pdf" or "3 items"), the picker, then the
  *   destination in words ("Destination: Company documents / Contracts / 2026") or why the button
  *   cannot be used yet (nothing chosen; the items are already there, `from`), and Cancel / the
  *   action (main last). A returned promise keeps the dialog busy until it settles.

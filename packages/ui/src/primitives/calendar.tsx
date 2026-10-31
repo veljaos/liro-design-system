@@ -9,14 +9,14 @@ import { cn } from './cn'
  * Day, WeekdaysRow and CalendarHeader styles, size 'sm').
  *
  * Everything that depends on the language comes from LiroProvider, never from a bundled locale:
- * month and weekday names from `format` (BUILD-PLAN section 3), the first day of the week from
+ * month and weekday names from `format`, the first day of the week from
  * `weekStartsOn`, "today" from `today`, the direction from `direction`, and the accessible names
  * of the days from `format.date`. The three labels the calendar needs for its own controls come
  * from the caller (`labels`), because the Design System has no text of its own.
  *
  * The direction is passed to react-day-picker, which then swaps the left and right arrow keys in
- * right-to-left. shadcn/ui's calendar does not pass it, so those keys moved the wrong way in
- * right-to-left (P2.1 finding, Appendix B.7). The month chevrons are drawn mirrored in
+ * right-to-left. shadcn/ui's calendar does not pass it, so those keys would move the wrong way in
+ * right-to-left. The month chevrons are drawn mirrored in
  * right-to-left, as the Button arrows: react-day-picker's default navigation always draws them
  * left and right (its 'around' layout, which swaps them, is not offered).
  *
@@ -51,7 +51,7 @@ export type CalendarProps = DistributiveOmit<
 > & {
   labels: CalendarLabels
   /**
-   * The month across its container's full width (PeriodField's sheet on a phone, P5.28): the
+   * The month across its container's full width (PeriodField's sheet on a phone): the
    * seven columns share the width, the days keep their 36px height. Default: 36px days.
    */
   fullWidth?: boolean

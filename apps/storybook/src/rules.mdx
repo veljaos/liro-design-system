@@ -4,7 +4,7 @@ import { Meta } from '@storybook/addon-docs/blocks'
 
 # Rules
 
-The principles every component and template follows. Source: `BUILD-PLAN.md`, sections 1 and 6.
+The principles every component and template follows.
 
 ## What we are building
 
@@ -13,7 +13,7 @@ The shared look, components and screen templates of every Liro application, so t
 The model is Carbon (IBM) and SAP's UI5 controls, not an application framework:
 
 - The Design System is **independent of any backend.** It knows nothing about Liro Business Core, tenants, permissions, APIs, manifests, translations or document types. It receives everything it shows through props and one provider.
-- **Liro Business Core adapts to it**, through an adapter layer that lives in `liro-core`, not here. That adapter turns the Core's descriptors into props, plugs in the Core's translations and formatting, and passes permission answers as "disabled, because …". The Design System never waits for the Core.
+- **Liro Business Core adapts to it**, through an adapter layer that lives in `liro-core`, not here. That adapter turns the Core's descriptors into props, plugs in the Core's translations and formatting, and passes permission answers as props: a field the user may not change is read only, an action the user may not take is unavailable with its reason in words. The Design System never waits for the Core.
 - It is **small on purpose.** Bricks (components) and templates (screen layouts), with Liro's look. Whole flows — sign-in, onboarding, data-subject requests, agent confirmation — are built in `liro-core` **from** these bricks.
 
 ### What the Design System never does

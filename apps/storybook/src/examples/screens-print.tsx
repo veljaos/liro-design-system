@@ -5,9 +5,9 @@ import { FEATURED, INVOICES, type ExampleInvoice } from './examples-story-data'
 import { FolioPdf } from './folio-pdf'
 
 /*
- * Invoice F-2026-0412's PDF (P5.95), opened from its page's "PDF": a bar with the way back and the
+ * Invoice F-2026-0412's PDF, opened from its page's "PDF": a bar with the way back and the
  * file's name above the document. The document is liro-folio's PDF; the Design System only shows
- * it (P5.95: no React replica of a printed document). The examples have no PDF, so FolioPdf stands
+ * it (no React replica of a printed document). The examples have no PDF, so FolioPdf stands
  * in for it. Only the public entry point `@veljaos/ui`.
  */
 

@@ -1,5 +1,5 @@
 /*
- * PageViewer's logic (BUILD-PLAN P5.31), pure and tested (page-viewer.test.ts): where a region
+ * PageViewer's logic, pure and tested (page-viewer.test.ts): where a region
  * stands on its page, which page holds it, the page within the document, and on which side of
  * the region its name fits. Positions are geometry in the page's own units, never amounts.
  */

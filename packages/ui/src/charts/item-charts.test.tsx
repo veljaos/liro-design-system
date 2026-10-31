@@ -10,7 +10,7 @@ import { ScatterChart } from './scatter'
 import { Treemap } from './treemap'
 
 /*
- * The charts whose marks are reached one by one (P5.93 item 44), rendered on a server: their card,
+ * The charts whose marks are reached one by one, rendered on a server: their card,
  * legend and table. The marks themselves are drawn once the plot is measured (in a browser: the
  * stories' play functions check the keys and the tooltip).
  */

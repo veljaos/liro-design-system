@@ -14,7 +14,7 @@ function padded(value: string, decimals: number | undefined): string {
   return `${integer}.${fraction.padEnd(decimals, '0')}`
 }
 
-describe('readNumber: what a number field reads on blur (Appendix B.3 and B.4)', () => {
+describe('readNumber: what a number field reads on blur', () => {
   const screens = [createFormat('sr-Latn-RS'), createFormat('en')]
 
   it.each([

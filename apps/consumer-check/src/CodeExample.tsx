@@ -2,7 +2,7 @@ import { CodeBlock, LiroProvider } from '@veljaos/ui'
 import { CodeHighlighting } from '@veljaos/ui/code'
 
 /**
- * CodeBlock from `@veljaos/ui`, highlighted through the `@veljaos/ui/code` subpath (P5.93):
+ * CodeBlock from `@veljaos/ui`, highlighted through the `@veljaos/ui/code` subpath:
  * Shiki's tokenizer and JavaScript engine, the JSON grammar loaded on first use. Typed against the
  * packed declarations.
  */

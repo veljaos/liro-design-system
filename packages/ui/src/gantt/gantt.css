@@ -1,5 +1,5 @@
 /*
- * Gantt (P5.37): the structure SVAR React Gantt needs, in Liro tokens. SVAR's own style sheets
+ * Gantt: the structure SVAR React Gantt needs, in Liro tokens. SVAR's own style sheets
  * (style.css and all.css) and its themes (Willow, Material) are not used: the themes carry raw
  * colours and load an icon font from SVAR's CDN. These rules are adapted from
  * @svar-ui/react-gantt 2.7.3's dist/index.css (MIT, © XB Software Sp. z o.o; THIRD-PARTY-NOTICES.md),
@@ -81,7 +81,7 @@
   overflow: hidden;
 }
 
-/* The chart: it scrolls sideways inside its card, never the page (D19). */
+/* The chart: it scrolls sideways inside its card, never the page. */
 .liro-gantt .wx-chart {
   position: relative;
   flex: 1 1 auto;
@@ -96,7 +96,7 @@
 .liro-gantt .wx-area {
   position: relative;
   /* Clipped, not hidden: a hidden box would scroll, and a bar's name sticks to the chart's edge
-     (the chart is the one box that scrolls sideways; P5.93 item 34). */
+     (the chart is the one box that scrolls sideways). */
   overflow-y: clip;
   /* The grid: a line at the end of every column, one under every row (sizes from Gantt). */
   background-image:
@@ -120,7 +120,7 @@
 
 /*
  * The time scale: two rows, sticky in the chart and moved below the shell with the table's header
- * (styles.css, "Sticky table headers": the region's scroll-driven animation, P5.90 item 8).
+ * (styles.css, "Sticky table headers": the region's scroll-driven animation).
  */
 .liro-gantt .wx-scale {
   position: sticky;
@@ -157,7 +157,7 @@
 /*
  * The bars. Gantt draws each bar's look itself (its template); SVAR keeps the place and the drag.
  * The bars' layer is above the dependencies' lines: a name beside its bar stands on a tag of the
- * surface, so no line crosses its text (P5.93 item 34).
+ * surface, so no line crosses its text.
  */
 .liro-gantt .wx-bars {
   position: absolute;
@@ -363,7 +363,7 @@
 }
 
 /*
- * Right to left (D9): the chart is mirrored, so time runs from the leading edge; every text in it
+ * Right to left: the chart is mirrored, so time runs from the leading edge; every text in it
  * is turned back. Dragging is off there (SVAR measures the pointer in physical pixels); the rows'
  * dialogs edit instead.
  */
@@ -377,7 +377,7 @@
 }
 /* A scale label fills its cell and is centred in it: turned back about the cell's own middle, it
    stands on whole pixels. Turned about its own middle at a fractional place, in the scale's layer
-   of its own, its text was drawn a pixel apart from run to run (P5.31). */
+   of its own, its text was drawn a pixel apart from run to run. */
 .liro-gantt[data-mirrored] .wx-scale .wx-cell > span {
   flex: 1 1 100%;
   min-width: 0;

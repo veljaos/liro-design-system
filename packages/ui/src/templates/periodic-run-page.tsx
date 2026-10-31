@@ -23,7 +23,7 @@ import { PageHeader, type PageBack } from './page-header'
 import { countChecks, type RunCheckResult } from './periodic-run-logic'
 
 /*
- * PeriodicRunPage (BUILD-PLAN P5.21): a process run once per period — payroll, depreciation, a
+ * PeriodicRunPage: a process run once per period — payroll, depreciation, a
  * VAT period close. Generic: the steps, checks, figures and texts come from the application; the
  * Core runs the process and decides what may happen next.
  * - The header (PageHeader: back, title, status, subtitle, the step's actions at the end with the
@@ -32,9 +32,9 @@ import { countChecks, type RunCheckResult } from './periodic-run-logic'
  *   the key figures.
  * - The steps (prepare → calculate → review → post → send; names from the application) as the
  *   Stepper: done steps checked, the current one ringed. On phones the Stepper's own phone form,
- *   "Step 3 of 5 · Review" over a thin bar (P5.23; before, a line of its own with the
+ *   "Step 3 of 5 · Review" over a thin bar (before, a line of its own with the
  *   LifecycleBar's message): five steps do not fit 360px.
- * - The running step (`progress`): a SectionCard with JobProgress (P5.4): the bar, "23 of 46"
+ * - The running step (`progress`): a SectionCard with JobProgress: the bar, "23 of 46"
  *   through format and the item being worked on.
  * - "Checks" for the current step: a flush SectionCard of rows divided by lines — the result's
  *   icon and word in its tone (Passed success, Warning warning, Failed danger, Not run yet
@@ -93,7 +93,7 @@ export interface RunProgress {
 export interface RunRerun {
   /** The action ("Rerun payroll"). */
   title: ReactNode
-  /** The run it acts on, bold on its own line under the title ("September 2026"; P5.28 item 6). */
+  /** The run it acts on, bold on its own line under the title ("September 2026"). */
   subject?: ReactNode
   /** What will happen ("The calculated results are replaced. Payslips are not sent yet."). */
   message?: ReactNode

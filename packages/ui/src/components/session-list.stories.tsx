@@ -34,7 +34,7 @@ const meta = {
           'application gives it (a SectionCard in the account settings).\n\n' +
           '**When:** the account’s security settings; an administrator’s view of a user ' +
           '(`readOnly`).\n\n' +
-          '**When not:** the history of sign-ins (a HistoryList, P5.1).',
+          '**When not:** the history of sign-ins (a HistoryList).',
       },
     },
   },

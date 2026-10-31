@@ -9,14 +9,14 @@ import { Spinner } from './spinner'
 import { TextAreaField } from './text-field'
 
 /*
- * HelpfulFeedback (BUILD-PLAN P5.30 e): "Was this helpful?" under a page the reader came to for
+ * HelpfulFeedback: "Was this helpful?" under a page the reader came to for
  * help — a help article, an answer, a generated summary. Two answers and, after "No", the
  * application may ask what was missing. Generic: the texts default to the provider's messages and
  * the application may give its own; what is done with the answer is the application's.
  * - A group named by the question (sm medium), then two buttons, "Yes" with ThumbsUp and "No" with
  *   ThumbsDown — words beside each icon, never an icon or a colour alone. They are toggle buttons
- *   (`aria-pressed`): the chosen one is the neutral selection (surface.selected, border.selected;
- *   D17), and the reader may change the answer. Each 36px high (44px in the touch density).
+ *   (`aria-pressed`): the chosen one is the neutral selection (surface.selected,
+ *   border.selected), and the reader may change the answer. Each 36px high (44px in the touch density).
  * - After an answer, a polite status under the buttons: "Thank you for telling us." (or the
  *   application's `thanks`), with a success CircleCheck.
  * - After "No" with `askWhy`: "What was missing?" (TextAreaField) and Send (neutral secondary: the

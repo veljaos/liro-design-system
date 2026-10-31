@@ -101,7 +101,7 @@ export const Default: Story = {
     await expect(canvas.getByRole('columnheader', { name: 'Budget' })).toBeVisible()
     const marker = canvas.getByRole('img', { name: /^Now, / })
     await expect(marker).toBeInTheDocument()
-    // Under the bars and their labels (P5.90 item 17): the marker on layer 0, the bars on 1.
+    // Under the bars and their labels: the marker on layer 0, the bars on 1.
     const bars = canvasElement.querySelector<HTMLElement>('.wx-bars')
     await expect(getComputedStyle(marker).zIndex).toBe('0')
     await expect(bars === null ? '' : getComputedStyle(bars).zIndex).toBe('1')
@@ -134,7 +134,7 @@ function overlap(a: DOMRect, b: DOMRect): boolean {
 }
 
 /**
- * The table's rows and the timeline's rows (P5.94 item 6): every row starts and ends at the same
+ * The table's rows and the timeline's rows: every row starts and ends at the same
  * pixel on both sides — its line, and the chosen row's band — down to the last row; and the date
  * of "now" on the scale covers none of the scale's labels.
  */

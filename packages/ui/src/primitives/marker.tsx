@@ -3,9 +3,9 @@ import { TEXT_DIRECTION } from './classes'
 import { cn } from './cn'
 
 /*
- * Marker (shadcn/ui `marker`, registry style radix-vega, fetched 2026-10-08; adapted as the P2.1
- * primitives). A small line of meta text beside or between messages: a day separator, an
- * author's name with their kind ("Liro agent" with AgentMark), a note such as "Edited".
+ * Marker (shadcn/ui `marker`, registry style radix-vega, adapted to the Liro tokens). A small line
+ * of meta text beside or between messages: a day separator, an author's name with their kind ("Liro
+ * agent" with AgentMark), a note such as "Edited".
  *
  * Adapted:
  * - Liro meanings: the text text.secondary at xs (12px; shadcn's sm is 14px, which competes with
@@ -13,7 +13,7 @@ import { cn } from './cn'
  *   border colour is not a background utility here, so each line is a pseudo-element's top border).
  * - Logical sides: the separator's lines keep 4px from the text with `me-1` / `ms-1` (shadcn:
  *   `mr-1` / `ml-1`); `text-left` → `text-start`; the text takes its direction from its content
- *   (TEXT_DIRECTION, P3.6).
+ *   (TEXT_DIRECTION).
  * - shadcn's `asChild` and its link styles are not kept: a marker is text, links in it are the
  *   application's.
  * - Icons are 14px (the Design System's small icon beside xs text), decorative.

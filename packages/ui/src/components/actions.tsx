@@ -27,14 +27,13 @@ import { DropdownMenu, type MenuEntry } from './dropdown-menu'
 import { INTENTS, type Emphasis, type Family, type IconComponent, type Intent } from './intents'
 
 /*
- * ActionGroup and UnavailableAction (BUILD-PLAN P2.7), the previous Design System's (owner's
- * decision, 2026-09-28, docs/decisions.md "Actions"):
+ * ActionGroup and UnavailableAction:
  * - ActionGroup: a wrapping row, 8px (xs) apart, centred vertically, aligned to the END by
  *   default (the main action sits at the end, where the eye and the thumb expect it); `align`
- *   'start' only beside text. New here, as the plan asks: on a narrow row the actions before the
- *   main one move into a "More" menu, the main action staying visible and last.
- * - UnavailableAction: disabled, with its reason as visible text beside the button (the plan)
- *   and in a tooltip (the old system: 240px wide, several lines, with the arrow), which opens on
+ *   'start' only beside text. On a narrow row the actions before the main one move into a
+ *   "More" menu, the main action staying visible and last.
+ * - UnavailableAction: disabled, with its reason as visible text beside the button and in a
+ *   tooltip (240px wide, several lines, with the arrow), which opens on
  *   hover, on keyboard focus and on touch. The button is `aria-disabled` rather than `disabled`,
  *   so it can take the focus and the reason can be read; pressing it does nothing.
  */
@@ -46,7 +45,7 @@ export type ActionItem = {
   /** From the application. */
   label: string
   onClick?: () => void
-  /** Weight within the family's rules (AGENTS.md D13). */
+  /** Weight within the family's rules. */
   emphasis?: Emphasis
   /** Makes it unavailable, with this reason (from the application) beside it and in a tooltip. */
   unavailableReason?: string
@@ -117,7 +116,7 @@ export type UnavailableActionProps = DistributiveOmit<
   reason: string
   /**
    * The id of an element where the flow shows the reason itself (`messages['action.unavailable']`)
-   * — a wizard's footer on phones puts it on one line under its row (P5.23). The button is then
+   * — a wizard's footer on phones puts it on one line under its row. The button is then
    * described by that element, and nothing is shown beside it.
    */
   reasonId?: string
@@ -224,7 +223,7 @@ interface OverflowRowProps<T extends ActionItem> {
 
 /**
  * An element's laid-out width, unrounded: offsetWidth rounds each button, and the rounded sum can
- * exceed the row by a pixel where the row is as wide as its buttons (P5.31). The used width, not
+ * exceed the row by a pixel where the row is as wide as its buttons. The used width, not
  * the bounding box: a transform (a dialog's opening zoom) must not change what fits.
  */
 function layoutWidth(element: HTMLElement | undefined): number {
@@ -260,7 +259,7 @@ function placeOf(element: HTMLElement): HTMLElement {
 
 /**
  * The row of ActionGroup and BulkActionBar. When the actions do not fit on one line, the ones
- * before the main action move into a "More" menu first; a label wraps (P2.7d) only when the main
+ * before the main action move into a "More" menu first; a label wraps only when the main
  * action alone is still too wide. Widths are measured unwrapped, in an invisible copy of the row.
  */
 export function OverflowRow<T extends ActionItem>({
@@ -292,7 +291,7 @@ export function OverflowRow<T extends ActionItem>({
   }, [])
 
   // A row sized by its content (a page header's actions, a worklist's bar) is as wide as what it
-  // shows: once folded it never sees the room it would have, and stays folded (P5.31). So it
+  // shows: once folded it never sees the room it would have, and stays folded. So it
   // decides with every action laid out — on mount, when the actions change, when their widths
   // change (a font arrives) and when the nearest box whose width does not follow its content
   // resizes — and folds only then. The same actions in a new array (a parent's re-render) are
@@ -376,11 +375,11 @@ export function OverflowRow<T extends ActionItem>({
 
   return (
     // Inside a flex row (a dialog's footer) the row fills its line: a row as wide as what it
-    // shows would stay folded once "More" took its place (P5.26).
+    // shows would stay folded once "More" took its place.
     <div ref={row} data-slot="action-row" className={cn('relative min-w-0', className)}>
       {/* Every action and the "More" button, laid out once invisibly and unwrapped, to measure
           their widths. Inside a box of no height that clips it: the copy, wider than a phone,
-          must not make the page scroll sideways (P5.28). */}
+          must not make the page scroll sideways. */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 h-0 overflow-clip"

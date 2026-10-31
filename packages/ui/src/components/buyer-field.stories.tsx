@@ -91,7 +91,7 @@ export const FewTypes: Story = {
   },
 }
 
-/** Read only (P5.93): every part in the read-only look of every field, no hints. */
+/** Read only: every part in the read-only look of every field, no hints. */
 export const ReadOnly: Story = {
   name: 'Read only',
   args: { types: FEW_TYPES, readOnly: true, defaultValue: STORY_BUYER },

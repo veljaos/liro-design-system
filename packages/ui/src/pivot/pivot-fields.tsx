@@ -35,7 +35,7 @@ import {
 } from './pivot-logic'
 
 /*
- * The pivot's field chooser (P5.77; P5.93 item 45, "simpler"): four clear zones — Rows,
+ * The pivot's field chooser: four clear zones — Rows,
  * Columns, Values, Filters — each a dashed box of field chips, then the fields not used yet.
  * - Dragging is the shortcut: a chip goes to another zone, to another place in its zone, or back
  *   among the unused fields, on the dragging rule (`useListDrag`: pointer events, a mouse after

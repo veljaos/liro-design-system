@@ -11,11 +11,11 @@ import { FactsLine } from './file-entry-parts'
 import { CURRENT_ROW, CURRENT_TONE, StatusBadge } from './status-badge'
 
 /*
- * VersionList (BUILD-PLAN P5.43): a file's versions, newest first, in its details panel.
+ * VersionList: a file's versions, newest first, in its details panel.
  * - Rows (the panel lists' rows, `panel-row`, so SidePanels' edge rule holds): the version's name
  *   (medium), then when, who and its size (through `format`), and the application's note
- *   ("Signed by both parties"). The current version stands out (P5.94 item 13, the owner's
- *   choice): its row on the subtle success background and "Current" a success badge — the one
+ *   ("Signed by both parties"). The current version stands out:
+ *   its row on the subtle success background and "Current" a success badge — the one
  *   "current" look of the library (CURRENT_ROW, CURRENT_TONE).
  * - Each version: Download and, on an earlier one, Restore — 28px neutral icon buttons, each named
  *   in the library's Tooltip. Restoring is not destructive (it makes a new current version and
@@ -52,7 +52,7 @@ export interface VersionListProps {
   /** Downloads one version; a promise is the application's to show. */
   onDownload?: (version: FileVersion) => void
   /**
-   * Makes an earlier version the current one, at once (P5.94: not destructive, so no question); a
+   * Makes an earlier version the current one, at once (not destructive, so no question); a
    * promise keeps the row's buttons waiting.
    */
   onRestore?: (version: FileVersion) => void | Promise<void>

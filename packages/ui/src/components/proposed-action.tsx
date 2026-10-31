@@ -10,10 +10,10 @@ import { KeyValueList, type KeyValueItem } from './cards'
 import { Spinner } from './spinner'
 
 /*
- * ProposedAction (BUILD-PLAN P5.34): an action an assistant proposes — post a document, send a
+ * ProposedAction: an action an assistant proposes — post a document, send a
  * reminder — as a card that always waits for the user. Nothing happens on its own: the card shows
  * what would be done (the application's title, text and facts) and offers Dismiss, then Confirm
- * (the main action last, D13); only Confirm runs it, through the application's `onConfirm`.
+ * (the main action last); only Confirm runs it, through the application's `onConfirm`.
  * - The card: a raised surface with a border.default line and radius lg, never a tone (a
  *   proposal is not a status). Over the title a small mark — Sparkles and "Proposed action" in
  *   text.secondary — and under the facts the note "Nothing is done until you confirm.".

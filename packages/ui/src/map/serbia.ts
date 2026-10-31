@@ -2,11 +2,11 @@ import type { MapAreaGeometry } from './map-logic'
 import { topologyFeatures, type Topology } from './topology'
 
 /*
- * The boundaries of the Republic of Serbia (P5.93 item 43, owner: "choropleth and bubble maps of
+ * The boundaries of the Republic of Serbia ("choropleth and bubble maps of
  * Serbia by statistical region, district, city and municipality … boundaries from an openly
  * licensed source that allows commercial use … simplified, loaded on demand"):
  * - Four levels: the five statistical regions (NSTJ level 2), the districts (okrug, with their
- *   ISO 3166-2:RS codes), the 145 cities and municipalities and (P5.94 item 1) the city
+ *   ISO 3166-2:RS codes), the 145 cities and municipalities and the city
  *   municipalities (gradske opštine) of the cities that have them — Belgrade's 17, Niš's 5 and
  *   the two each of Požarevac, Užice and Vranje (Novi Sad's and Kragujevac's have no boundaries in
  *   OpenStreetMap). Each area names its parent one level up (a city municipality its city, a
@@ -22,7 +22,7 @@ import { topologyFeatures, type Topology } from './topology'
  *   `SERBIA_BOUNDARIES_ATTRIBUTION`, RegionChart's `attribution`. The city municipalities come
  *   straight from OpenStreetMap's relations of admin_level 8 (ODbL 1.0), simplified the same way
  *   (250 m): `SERBIA_CITY_MUNICIPALITIES_ATTRIBUTION`. `loadSerbiaBoundaries` gives each level's.
- * - Kosovo and Metohija is part of Serbia (AGENTS.md D31, P5.31a): drawn within Serbia's area, as
+ * - Kosovo and Metohija is part of Serbia: drawn within Serbia's area, as
  *   Serbian law names it — the Region Kosovo and Metohija among the statistical regions, the
  *   Autonomous Province of Kosovo and Metohija among the districts and the municipalities. Its five
  *   districts and its municipalities as Serbian law defines them have no open boundary data (the
@@ -43,7 +43,7 @@ export const SERBIA_LEVELS: readonly SerbiaLevel[] = [
 
 /**
  * The cities divided into city municipalities (gradske opštine) in the data, by their id at the
- * municipality level: their areas open the fourth level (P5.94 item 1).
+ * municipality level: their areas open the fourth level.
  */
 export const SERBIA_DIVIDED_CITIES: readonly string[] = [
   'beograd',
@@ -79,8 +79,8 @@ export interface SerbiaArea {
   /**
    * Whether the area opens a level under it in the data (a drill-down's next step): every region
    * and district, a city divided into city municipalities; never Kosovo and Metohija (one area at
-   * every level under the region, D31) nor a city municipality. An area without one is the last
-   * level: not choosable in a drill-down (P5.94 item 1).
+   * every level under the region) nor a city municipality. An area without one is the last
+   * level: not choosable in a drill-down.
    */
   hasLowerLevel: boolean
   /** GeoJSON, [longitude, latitude]. */
@@ -190,7 +190,7 @@ export interface SerbiaDrillStep {
 }
 
 /**
- * Opens the level under an area of `level` (P5.94 item 1): loads the lower level, keeps the
+ * Opens the level under an area of `level`: loads the lower level, keeps the
  * area's children and skips a level that has only one child, which opens again by itself. Null
  * when the area has no lower level (the last level: nothing to open).
  */

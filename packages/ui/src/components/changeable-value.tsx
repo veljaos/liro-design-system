@@ -5,7 +5,7 @@ import { useLiro } from '../provider/liro-provider'
 import { CompactIconButton } from './button'
 
 /*
- * ChangeableValue (P4.9, the owner's review; docs/decisions.md "Draft documents"): a value the
+ * ChangeableValue: a value the
  * system filled in — a draft's number, its date, its due date — shown as a value, not as an empty
  * or pre-filled field, with a way to change it.
  * - Read: the label xs text.secondary above, the value sm medium (tabular digits), then a 28px

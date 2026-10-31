@@ -1,7 +1,7 @@
 import { useLayoutEffect } from 'react'
 
 /*
- * Sticky bottom bars and the toasts (P5.90 item 21, "toasts never block"). A bar stuck to the
+ * Sticky bottom bars and the toasts ("toasts never block"). A bar stuck to the
  * bottom of the page — a form's bottom bar, a wizard's Back / Next row on phones, an application's
  * own — registers itself here; the heights of the bars of one provider are added up and published
  * as --liro-bottom-bars on the provider's root (the closest [data-liro-theme]), which the Toaster

@@ -3,19 +3,19 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * BrandLockup (P4.0, the owner's decision, docs/decisions.md "Brand lockup"): the application's
+ * BrandLockup: the application's
  * name as text, without an icon — "Liro Business Apps" in the brand face (Space Grotesk), the
  * logo's colours (text.logo: #0078D4 in light, #3EACEB in dark, as the logo files), one line: the brand
  * name bold, the product name regular. Both names are data (props), so a new product name needs
  * no new file.
- * - md (the header): 20px (xl), about the height of the old wordmark.
- * - lg (status pages, sign-in): 24px (approved by the owner).
+ * - md (the header): 20px (xl).
+ * - lg (status pages, sign-in): 24px.
  * - Below 48em only the brand name; the product name is left out (`compact` forces either way).
  * - One link to the home page (the provider's `linkComponent`), its accessible name the full
  *   product name ("Liro Business Apps"), which contains the visible text (WCAG 2.5.3). Without
  *   `href` it is text with that name.
  * The wordmark and icon files of `@veljaos/tokens/brand/` stay for documents, e-mail, the web
- * icons and the installed app (AGENTS.md D18: no component contains a logo).
+ * icons and the installed app (no component contains a logo).
  */
 
 export type BrandLockupSize = 'md' | 'lg'
@@ -71,7 +71,7 @@ export function BrandLockup({
   )
 
   const classes = cn(
-    // The logo's colour in every link state (P4.4, owner): never the browser's visited purple.
+    // The logo's colour in every link state: never the browser's visited purple.
     'inline-block shrink-0 rounded-sm font-brand whitespace-nowrap text-logo no-underline visited:text-logo hover:text-logo active:text-logo focus:text-logo hover:no-underline',
     size === 'lg' ? 'text-h1' : 'text-xl',
     'leading-tight',

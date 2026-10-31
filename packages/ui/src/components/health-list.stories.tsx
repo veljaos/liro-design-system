@@ -57,7 +57,7 @@ const CONNECTIONS: HealthItem[] = [
     lastError: {
       at: '2026-10-14T02:01:00+02:00',
       message: 'Timeout after 120 seconds.',
-      // The bank's raw answer (P5.93), shown on request as a CodeBlock.
+      // The bank's raw answer, shown on request as a CodeBlock.
       detail: BANK_ERROR,
       detailLanguage: 'json',
     },
@@ -331,7 +331,7 @@ export const Retrying: Story = {
 }
 
 /**
- * A last error's raw answer, on request (P5.93): "Show details" opens it as a small CodeBlock
+ * A last error's raw answer, on request: "Show details" opens it as a small CodeBlock
  * across the row, highlighted where the application gives `CodeHighlighting`.
  */
 export const ErrorDetails: Story = {

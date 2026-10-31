@@ -1,6 +1,5 @@
 /*
- * The logic of KanbanBoard (P5.7), kept apart from the markup so it can be unit-tested (AGENTS.md
- * C7): where a card goes with the keys, where a dragged card would land, how the other cards make
+ * The logic of KanbanBoard, kept apart from the markup so it can be unit-tested: where a card goes with the keys, where a dragged card would land, how the other cards make
  * room, and the order after a move.
  */
 
@@ -49,9 +48,9 @@ export function moveCard<Column extends KanbanColumnIds>(
 }
 
 /**
- * The place a card lifted with the keyboard moves to (P5.7): up and down within its column,
+ * The place a card lifted with the keyboard moves to: up and down within its column,
  * forward and back between columns — the arrow that points forward in the reading direction goes
- * to the next column (Appendix B.7: from the leading edge), keeping the card's height in the list
+ * to the next column (from the leading edge), keeping the card's height in the list
  * as far as the other column allows. Null when the key does not move it.
  */
 export function kanbanKeyTarget(
@@ -97,7 +96,7 @@ export interface ColumnGeometry {
 /**
  * Where a dragged card would land: the column under the card's centre (else the nearest one),
  * and in it the place after every other card whose centre is above the dragged card's centre.
- * Measured on the laid-out columns, so it holds in both directions (B.7: the columns already run
+ * Measured on the laid-out columns, so it holds in both directions (the columns already run
  * from the leading edge, and the slots are where the cards really stand).
  */
 export function dropTarget(

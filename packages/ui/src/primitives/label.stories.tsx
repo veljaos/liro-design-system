@@ -10,7 +10,7 @@ const meta = {
   parameters: {
     docs: {
       description: {
-        component: internal('A field label: 13px, weight 600. Field (P2.2) places it.'),
+        component: internal('A field label: 13px, weight 600. Field places it.'),
       },
     },
   },

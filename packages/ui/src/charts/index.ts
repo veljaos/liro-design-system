@@ -1,4 +1,4 @@
-// @veljaos/ui/charts (P4.7a): the charts, on Recharts through the shadcn/ui Chart primitive. A
+// @veljaos/ui/charts: the charts, on Recharts through the shadcn/ui Chart primitive. A
 // subpath of its own, so an application without charts does not load Recharts.
 export {
   AreaChart,

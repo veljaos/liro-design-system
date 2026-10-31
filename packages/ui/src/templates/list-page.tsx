@@ -25,19 +25,18 @@ import { PageHeader } from './page-header'
 import { Tooltip } from '../components/popover'
 
 /*
- * ListPage, ColumnChooser and QuickPreview (BUILD-PLAN P4.3; the owner's values,
- * docs/decisions.md "List page"):
+ * ListPage, ColumnChooser and QuickPreview:
  * - The page's main action ("New invoice") at the end of a row on the page background; the title
  *   is the page's h1 for screen readers only, because the module tab already names the page
  *   (`titleHidden`, default true; PageHeader). Below them ONE card (the raised surface,
  *   border.default, radius lg, no shadow) holding the saved views as its first row, the FilterBar
  *   (inCard) and the table edge to edge. No other cards. The FilterBar keeps only the list's own
  *   actions (Export, Columns). The table's header stays below the shell while the page scrolls
- *   (DataTable's `stickyHeader`, default true since P5.28 item 4).
+ *   (DataTable's `stickyHeader`, default true).
  * - Saved views: the card's first row, start-aligned (list filters, not page tabs), the tab look
  *   with the blue line under the active one; the count after the label in xs text.tertiary,
  *   tabular (through `format.number`); the "Save view" slot at the end of the row. The DS only
- *   renders them; the Core stores them. P4.9: on desktop the first five (`visibleViews`) are tabs
+ *   renders them; the Core stores them. On desktop the first five (`visibleViews`) are tabs
  *   and the rest are under "More", whose button names the current view when it is there; on
  *   phones one select "View: All 1.284" lists them with their counts, searchable above 7.
  * - ColumnChooser: a neutral small button "Columns" opening a list of the columns, each with a
@@ -62,7 +61,7 @@ export interface ListPageProps {
   title: string
   /**
    * The title for screen readers only, because the active module tab already names the page.
-   * Default true (owner, P4.3); false where no tab names the list.
+   * Default true; false where no tab names the list.
    */
   titleHidden?: boolean
   /** The page's main action at the end of the title row (a Button), the main one last. */
@@ -73,7 +72,7 @@ export interface ListPageProps {
   view?: string
   onViewChange?: (id: string) => void
   /**
-   * Desktop: how many views stand as tabs; the rest are under "More" (P4.9). Default 5
+   * Desktop: how many views stand as tabs; the rest are under "More". Default 5
    * (`VISIBLE_VIEWS`). Phones show one select of all views.
    */
   visibleViews?: number
@@ -95,7 +94,7 @@ export const VIEW_SEARCH_THRESHOLD = 7
 export const VISIBLE_VIEWS = 5
 
 /**
- * The views shown as tabs and those under "More" (P4.9): the first `visible`, in the
+ * The views shown as tabs and those under "More": the first `visible`, in the
  * application's order; one view more than `visible` is shown as a tab rather than a menu of one.
  * A current view under "More" stays there; the "More" button then names it.
  */
@@ -133,7 +132,7 @@ function SavedViewTabs(props: SavedViewsProps) {
   const { messages } = useLiro()
   const { tabs, more } = splitViews(props.views, props.visible)
   const hiddenCurrent = more.find((view) => view.id === props.view)
-  // The tab row rule (P5.90 item 6): faded edges where views lie past them, the current one in view.
+  // The tab row rule: faded edges where views lie past them, the current one in view.
   const row = useTabRow(props.view)
   return (
     <div className="flex items-end gap-4 border-0 border-b border-solid border-default px-4">
@@ -350,7 +349,7 @@ export function ListPage(props: ListPageProps) {
         )}
         {props.filterBar}
         {/* The table to the card's edges; on phones the cards 16px inside (DataTable inCard). Its
-            header stays below the shell while the page scrolls (DataTable's default, P5.28). */}
+            header stays below the shell while the page scrolls (DataTable's default). */}
         <div className="min-w-0">{props.children}</div>
       </section>
     </div>

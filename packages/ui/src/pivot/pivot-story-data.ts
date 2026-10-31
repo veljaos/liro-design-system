@@ -462,7 +462,7 @@ export const LONG_LABELS: Record<string, string> = {
   'Product line': 'Product line as registered in the catalogue of the previous year',
 }
 
-/** The views the stories' application suggests (P5.93 item 45): the user starts from one. */
+/** The views the stories' application suggests: the user starts from one. */
 export const VIEWS: PivotView[] = [
   { id: 'quarter', label: 'By region and quarter', layout: QUARTER_LAYOUT },
   { id: 'month', label: 'By region and month', layout: MONTH_LAYOUT },

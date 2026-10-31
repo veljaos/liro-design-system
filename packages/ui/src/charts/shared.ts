@@ -4,7 +4,7 @@ import { useLiro } from '../provider/liro-provider'
 import type { LiroMessages } from '../provider/messages'
 
 /*
- * What every chart of `@veljaos/ui/charts` shares (P4.7a): series and categories, colours, reading
+ * What every chart of `@veljaos/ui/charts` shares: series and categories, colours, reading
  * a decimal string for drawing, short axis ticks and motion.
  */
 
@@ -77,7 +77,7 @@ export function seriesColour(
 }
 
 /**
- * A decimal string as a number, for drawing only (rule D4: nothing drawn is read back, added or
+ * A decimal string as a number, for drawing only (nothing drawn is read back, added or
  * shown); unreadable or missing is null — a gap, never 0.
  */
 export function plotValue(value: string | null | undefined): number | null {

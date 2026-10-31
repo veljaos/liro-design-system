@@ -46,13 +46,13 @@ const meta = {
           'below, Ctrl+Delete removes the row. **On phones** each line is a card (its title and ' +
           'remove button, then its fields under their column labels, short ones two to a row), ' +
           '"Add line" under the cards and the totals and the balance after it, never over a ' +
-          'line; Enter ("next") goes through the line, then the next one. **Simple by default ' +
-          '(P5.90):** a rarely used column (`optional`: a line’s discount) is hidden until a line ' +
+          'line; Enter ("next") goes through the line, then the next one. **Simple by ' +
+          'default:** a rarely used column (`optional`: a line’s discount) is hidden until a line ' +
           'uses it or the user adds it from "Add line ▾". ' +
           '**Controlled:** the application keeps the rows, adds and removes them when asked, ' +
           'computes amounts and totals (shown with SettlingValue) and sends errors and warnings, ' +
           'shown under their row.\n\n' +
-          '**Complex documents (P5.18).** Rows carry a line type (`getRowType`): a section ' +
+          '**Complex documents.** Rows carry a line type (`getRowType`): a section ' +
           'heading and a text line are one field across the row (`lineText`; bold, and xs ' +
           'secondary), a subtotal has no field (its text end-aligned, semibold, a rule above, its ' +
           'amounts from the application), discounts and deductions are lines with negative ' +
@@ -64,7 +64,7 @@ const meta = {
           'as H87). `details` show an asset number or a sale note under the row, `internal` ones ' +
           'after "Internal" (never on the customer’s PDF: the application’s rule). Keep ' +
           '`columns` stable (useMemo) in long grids: every cell is a memoised field.\n\n' +
-          '**When not:** a list to read (DataTable); one record (fields in a form, P3.5); an ' +
+          '**When not:** a list to read (DataTable); one record (fields in a form); an ' +
           'issued document (its read-only lines are a DataTable).',
       },
     },
@@ -280,7 +280,7 @@ export const Default: Story = {
 }
 
 /**
- * The plan's "Done when": ten lines entered without a mouse. For each line: the item by typing
+ * Ten lines entered without a mouse. For each line: the item by typing
  * and choosing (Enter chooses, it does not move), Tab, the description, Tab, quantity, Tab,
  * price; then Tab past the remove button to "Add line" and Enter, which adds a line and puts the
  * focus in its first cell. Runs in left-to-right and right-to-left.
@@ -448,7 +448,7 @@ export const WithDateAndFooter: Story = {
   ),
 }
 
-// ---- An optional column (P5.90 item 4): a line's discount, shown only when used. ----
+// ---- An optional column: a line's discount, shown only when used. ----
 
 interface DiscountedLine extends Line {
   /** The line's discount in percent, a decimal string, or null. */
@@ -530,7 +530,7 @@ const ONE_DISCOUNT: DiscountedLine[] = NO_DISCOUNT.map((line, index) =>
 )
 
 /**
- * Simple by default (P5.90 item 4): no line has a discount, so the grid shows no discount column;
+ * Simple by default: no line has a discount, so the grid shows no discount column;
  * "Add line ▾" offers it ("Discount on a line").
  */
 export const OptionalColumnHidden: Story = {
@@ -600,7 +600,7 @@ export const OptionalColumnInteraction: Story = {
 }
 
 /**
- * The phone layout's one place for the totals (P5.90 item 3): after the last line and "Add line",
+ * The phone layout's one place for the totals: after the last line and "Add line",
  * in the flow (never sticky over a line), and nothing wider than the screen.
  */
 async function expectTotalsAfterLines(canvasElement: HTMLElement) {
@@ -621,7 +621,7 @@ async function expectTotalsAfterLines(canvasElement: HTMLElement) {
 }
 
 /**
- * Phone width (P5.90 item 3): each line is a card — "Line 1" and its remove button, the fields
+ * Phone width: each line is a card — "Line 1" and its remove button, the fields
  * under their column labels (the item and the description across, the short ones two to a row),
  * the amount as a label and a value; "Add line" under the cards and the total and the balance in
  * one place after it, never over a line; "next" on the on-screen keyboard (Enter) goes through a
@@ -772,9 +772,9 @@ export const Japanese: Story = {
   ),
 }
 
-// ── P5.18: line types, lines by search, tax category and unit, a long specification ──────────
+// ── Line types, lines by search, tax category and unit, a long specification ──────────
 
-/** A document line as the application keeps it (P5.18). */
+/** A document line as the application keeps it. */
 interface DocLine {
   id: string
   type: LineType
@@ -1105,7 +1105,7 @@ function DocumentLines({
 }
 
 /**
- * P5.18: the line types of a document, told apart by typography — section headings bold across
+ * The line types of a document, told apart by typography — section headings bold across
  * the row, each section ending in its subtotal (end-aligned, semibold, a rule above), a text line
  * smaller and secondary, a discount with its negative amount. "Add line" adds a normal line; its
  * chevron offers a text line, a section heading and a discount. Enter skips the subtotals and
@@ -1160,7 +1160,7 @@ export const LineTypesInteraction: Story = {
 }
 
 /**
- * P5.18: one search field per line. Typing a name, a code or an asset number finds items (with
+ * One search field per line. Typing a name, a code or an asset number finds items (with
  * their stock), services and fixed assets in groups; the chosen record fills the line (unit,
  * price, tax category, account — the application's) and its kind stands in the line as small
  * secondary text. A quantity above the stock is a warning under the row; a fixed asset brings its
@@ -1497,11 +1497,11 @@ function Specification({ layout }: { layout?: 'desktop' | 'phone' }) {
 }
 
 /**
- * P5.18: a specification of 300 positions in six sections, edited like document lines (the same
+ * A specification of 300 positions in six sections, edited like document lines (the same
  * keys, a unit and a tax category per position), with Previous / This period / Cumulative
  * columns from the application. A grid of 100 lines or more draws only the lines around the view
- * (and the focused line), each cell a memoised field, so it stays quick (the measured numbers are
- * in docs/decisions.md "Liro patterns (Phase 5 part 1)"); the table still tells assistive technology its full size.
+ * (and the focused line), each cell a memoised field, so it stays quick; the table still tells
+ * assistive technology its full size.
  */
 export const LongSpecification: Story = {
   name: 'Specification, 300 positions',
@@ -1558,7 +1558,7 @@ export const LongSpecificationInteraction: Story = {
 }
 
 /*
- * P5.28 item 4: the header row stays below the shell's sticky header while the page scrolls; in a
+ * The header row stays below the shell's sticky header while the page scrolls; in a
  * card the first column stays at the start while the lines scroll sideways; on phones the totals
  * card sticks below the shell, never under it.
  */
@@ -1593,7 +1593,7 @@ export const UnderTheShell: Story = {
       throw new Error('no cells')
     }
     await expectFirstColumnStays(region, first, last, 120)
-    // Glued at any speed (P5.90 item 8): large jumps, checked in the very next frame.
+    // Glued at any speed: large jumps, checked in the very next frame.
     const head = table.querySelector('thead')
     if (head === null) throw new Error('no header')
     await expectGluedWhileJumping(canvasElement, region, head)
@@ -1601,7 +1601,7 @@ export const UnderTheShell: Story = {
 }
 
 /**
- * A phone (P5.90 item 3): the page scrolls in its frame; the cards follow each other and the
+ * A phone: the page scrolls in its frame; the cards follow each other and the
  * totals stand after them and "Add line", never over a line, wherever the page is scrolled.
  */
 export const UnderTheShellPhone: Story = {

@@ -1,14 +1,14 @@
 import dagre, { type EdgeLabel, type GraphLabel, type NodeLabel } from '@dagrejs/dagre'
 
 /*
- * The pure logic of Diagram (BUILD-PLAN P5.26): the data a diagram is made of, the automatic
+ * The pure logic of Diagram: the data a diagram is made of, the automatic
  * layout (dagre), the order of the steps, the keyboard's targets, the operations an edit reports
  * and how an application applies them, and the counts of a run. No React here; every function is
  * tested in diagram-logic.test.ts.
  *
  * Coordinates are the layout's own: x grows from the leading edge (the start of the reading
  * direction), y grows downwards, in pixels at zoom 1. Diagram mirrors x in a right-to-left page
- * when it draws, so a stored position means the same place in both directions (B.7).
+ * when it draws, so a stored position means the same place in both directions.
  */
 
 // ── The data ──────────────────────────────────────────────────────────────────────────────────
@@ -453,7 +453,7 @@ export function diagramKeyTarget(
 /**
  * How far an arrow key moves a chosen step, in layout coordinates: 8px (Shift: 40px) in the
  * arrow's direction on the screen. In a right-to-left page the layout's x runs the other way, so
- * ArrowRight lowers it (B.7: movement measured from the leading edge). Null for other keys.
+ * ArrowRight lowers it (movement measured from the leading edge). Null for other keys.
  */
 export function keyMoveDelta(key: string, shift: boolean, rtl: boolean): DiagramPosition | null {
   const step = shift ? MOVE_STEP * 5 : MOVE_STEP

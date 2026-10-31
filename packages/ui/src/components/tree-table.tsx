@@ -19,11 +19,11 @@ import { usePhone } from './use-phone'
 import { useTree, type TreeBaseProps } from './use-tree'
 
 /*
- * TreeTable (BUILD-PLAN P5.9): a tree whose nodes carry figures — a chart of accounts with its
+ * TreeTable: a tree whose nodes carry figures — a chart of accounts with its
  * balances, warehouse locations with their stock, a budget by org unit. The first column is the
  * tree (TreeView's rows: chevron, code, name, the same keys, lazy children and selection); the
  * other columns come from DataTable-like definitions. The table never adds anything: a branch's
- * figures and the totals row are the application's (D4).
+ * figures and the totals row are the application's.
  * - A treegrid (WAI-ARIA): the rows take the focus (roving, one in the tab order) and the keys of
  *   the tree pattern; the cells hold text only. `aria-level`, `aria-setsize`, `aria-posinset`,
  *   `aria-expanded` per row; with `maxHeight`, `aria-rowcount` and `aria-rowindex` too.
@@ -34,8 +34,8 @@ import { useTree, type TreeBaseProps } from './use-tree'
  *   border.strong line above it, sticky at the bottom while the table scrolls.
  * - Thousands of nodes: with `maxHeight` the table scrolls inside it with a sticky header and
  *   draws only the rows in view (TanStack Virtual, `tree-window.ts`).
- * - The header row stays below the shell's sticky top while the page scrolls (P5.28 item 4,
- *   `useStickyHead`), also without `maxHeight`.
+ * - The header row stays below the shell's sticky top while the page scrolls
+ *   (`useStickyHead`), also without `maxHeight`.
  * - Phones (below 48em, or `layout`): the tree (TreeView's phone rows) with the main figure
  *   (`mainColumn`) at each row's end, and the total under it.
  */
@@ -168,7 +168,7 @@ function DesktopTreeTable<Data>(props: TreeTableProps<Data>) {
   const view = useTreeRows(tree, scrollerRef, revealRef, windowed, false)
   const hasTotals = props.totals !== undefined
   // The header row stays below the shell while the page scrolls, and at the top inside
-  // `maxHeight` (P5.28 item 4).
+  // `maxHeight`.
   useStickyHead(scrollerRef, props.loading !== true && props.nodes.length > 0)
 
   if (props.nodes.length === 0 && props.loading !== true) {
@@ -248,7 +248,7 @@ function DesktopTreeTable<Data>(props: TreeTableProps<Data>) {
             role="gridcell"
             className={cn(
               // The row's padding (py-1) and the first line's (FIRST_LINE): a figure stands on its
-              // name's first line, also when the name wraps (P5.93 item 36).
+              // name's first line, also when the name wraps.
               'table-cell px-4 py-1 align-top whitespace-nowrap text-primary',
               LINE,
               ALIGN[alignOf(column)],

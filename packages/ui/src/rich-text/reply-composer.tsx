@@ -43,26 +43,26 @@ import {
 } from './rich-text-logic'
 
 /*
- * ReplyComposer (P5.30): writes a reply to a conversation, or a note only the team sees, in
+ * ReplyComposer: writes a reply to a conversation, or a note only the team sees, in
  * formatted text — a support desk's reply, a reply to a request, a note on a case. Built on
  * RichTextField (the `@veljaos/ui/rich-text` subpath), so its toolbar, shortcuts, paste rules,
  * merge fields and mentions are RichTextField's.
  *
  * - **Two modes** (`modes`, default both): a reply and an internal note, switched by a compact
- *   segmented control at the top that never wraps (P5.93 item 33; one choice, named "Message
- *   type"; the neutral selection, never blue, D17).
+ *   segmented control at the top that never wraps (one choice, named "Message
+ *   type"; the neutral selection, never blue).
  *   The text is kept when the mode changes. The note's text box stands on surface.sunken and a
  *   line under the switch says who sees it ("Only your team sees internal notes."), with a lock —
  *   the same look as the note in the thread (MessageBubble `internal`). Labels from messages, or
  *   from `replyLabel` / `noteLabel` / `noteHint`. With one mode there is no switch.
  * - **Mentions** ("@") only in the note mode: a reply goes to someone outside the team.
  * - **Saved replies** (`savedReplies`, the application's texts): a "Saved replies" button opening
- *   a list, grouped, searched by typing from 11 replies (D20); the one chosen is inserted at the
+ *   a list, grouped, searched by typing from 11 replies; the one chosen is inserted at the
  *   caret, replacing a selection (a reply of one paragraph joins the line). A saved reply may use
  *   merge fields ("Dear {{contact.firstName}}, … on {{incident_date}} … from {{date_now}}"): with
  *   `mergeValues` (this conversation's values) they are written in as it is inserted, dates and
  *   amounts through `format`, fields computed from 'today' or 'now' from the provider's day and
- *   the application's `now`; a field without a value stays a pill marked "No value" (P5.31).
+ *   the application's `now`; a field without a value stays a pill marked "No value".
  * - **Attachments:** the paperclip opens the file chooser (`accept`); the files go to `onAttach`,
  *   which checks and uploads them, and shows them in `attachments` (an AttachmentList) under the
  *   text — each file on one line, a long name shortened in the middle, its remove button on the
@@ -71,10 +71,10 @@ import {
  *   (a knowledge base, a catalogue: LookupDialog) and resolves with `{ text, href }` — or null when
  *   nothing was chosen; the link is inserted at the caret. Only http(s) and mailto links.
  * - **Send:** the button at the end ("Send" or "Add note"), filled — clearly the main action —
- *   once there is something to send (P5.93 item 33), or Ctrl/Cmd+Enter in the text. `onSend` receives the
+ *   once there is something to send, or Ctrl/Cmd+Enter in the text. `onSend` receives the
  *   mode and the value (JSON, sanitized HTML, mentions, length); a promise keeps the text with a
  *   spinner until it resolves and empties it then; a rejection keeps it. Disabled while the text
- *   is empty. `unavailableReason` (P5.93): nothing can be written now — the text is read-only (the
+ *   is empty. `unavailableReason`: nothing can be written now — the text is read-only (the
  *   read-only look of every field), the tools and Send are unavailable, and the reason stands
  *   under the text in words.
  *
@@ -151,7 +151,7 @@ export interface ReplyComposerProps {
   /** Merge fields the text can use ("{{"), the application fills them in. */
   mergeFields?: readonly RichTextMergeField[]
   /**
-   * The values of the merge fields for this conversation (P5.31): a saved reply, or a field
+   * The values of the merge fields for this conversation: a saved reply, or a field
    * chosen from "{{", is inserted with its values written in ("Dear Milica, … on 12.10.2026.");
    * a field without a value stays a pill marked "No value" and a line names it. Fields computed
    * from 'today' or 'now' need none.
@@ -448,7 +448,7 @@ export function ReplyComposer({ ref: outer, ...props }: ReplyComposerProps) {
     >
       {modes.length > 1 && (
         <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-          {/* A compact segmented control on one line (P5.93 item 33): a label too long for the
+          {/* A compact segmented control on one line: a label too long for the
               room is shortened with an ellipsis, its whole text still the item's name. */}
           <ToggleGroup
             type="single"
@@ -577,7 +577,7 @@ export function ReplyComposer({ ref: outer, ...props }: ReplyComposerProps) {
             messages['composer.sendHint']
           )}
         </span>
-        {/* Clearly the main action once there is something to send (P5.93 item 33); at the
+        {/* Clearly the main action once there is something to send; at the
             row's end also when the row wraps. */}
         <span className="ms-auto flex">
           <Button

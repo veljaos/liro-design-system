@@ -1,6 +1,5 @@
 /*
- * The logic of DashboardGrid (P5.81), kept apart from the markup so it can be unit-tested
- * (AGENTS.md C7): how a card moves, how it is resized or removed, how many columns a size takes,
+ * The logic of DashboardGrid, kept apart from the markup so it can be unit-tested: how a card moves, how it is resized or removed, how many columns a size takes,
  * where each card stands in the grid (the browser's own placement, for the arrow keys), and
  * where the arrow keys move a card picked up by the keyboard. Nothing here measures or renders.
  */
@@ -185,7 +184,7 @@ function verticalTarget(places: readonly GridPlace[], index: number, step: 1 | -
 /**
  * Where a card picked up by the keyboard moves, as a new index in the order, or null when the
  * key does not move it. The forward arrow of the reading direction (ArrowRight in left-to-right,
- * ArrowLeft in right-to-left, Appendix B.7) moves it one place later, the other one place
+ * ArrowLeft in right-to-left) moves it one place later, the other one place
  * earlier; ArrowUp and ArrowDown move it to the place of the card above or below it in the grid
  * as laid out (`places`, from `gridPlacement`); Home and End to the start and the end.
  */

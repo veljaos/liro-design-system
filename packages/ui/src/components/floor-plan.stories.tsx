@@ -106,7 +106,7 @@ function itemOf(canvasElement: HTMLElement, id: string): HTMLElement {
 }
 
 /**
- * Every label written on the plan lies inside its item (P5.28 item 24: never cut); what does not
+ * Every label written on the plan lies inside its item (never cut); what does not
  * fit is left out (`data-fit`), not clipped.
  */
 async function labelsFit(canvasElement: HTMLElement) {
@@ -186,11 +186,11 @@ export const Default: Story = {
         name: 'Table 3, 4 guests · at 19:30, Reserved, 4 seats, Hall, Window seat asked for',
       }),
     ).toBeVisible()
-    // On the plan: the number and the state, then the guests; the time is in the list (P5.28).
+    // On the plan: the number and the state, then the guests; the time is in the list.
     await expect(itemOf(canvasElement, 't3')).toHaveTextContent('34 guests')
     await expect(itemOf(canvasElement, 't3')).not.toHaveTextContent('19:30')
     await labelsFit(canvasElement)
-    // All areas, or one at a time (P5.28 item 26).
+    // All areas, or one at a time.
     await expect(canvas.getByRole('radio', { name: 'All areas' })).toHaveAttribute(
       'aria-checked',
       'true',
@@ -200,7 +200,7 @@ export const Default: Story = {
     await expect(
       canvasElement.querySelector('[data-slot="floor-plan-canvas"]')?.getAttribute('dir'),
     ).toBe('ltr')
-    // Fixtures are drawn, not targets, outside edit mode; no walls, doors or windows (P5.28).
+    // Fixtures are drawn, not targets, outside edit mode; no walls, doors or windows.
     await expect(itemOf(canvasElement, 'piano')).toHaveAttribute('aria-hidden', 'true')
   },
 }
@@ -316,7 +316,7 @@ export const SwitchingViews: Story = {
   },
 }
 
-/** One area at a time (P5.28 item 26): the terrace alone, cropped and fitted. */
+/** One area at a time: the terrace alone, cropped and fitted. */
 export const OneArea: Story = {
   name: 'One area',
   render: () => (
@@ -355,7 +355,7 @@ export const ChoosingAnArea: Story = {
   },
 }
 
-/** Seven areas: the switcher is a select, usable with many areas (P5.28 item 26). */
+/** Seven areas: the switcher is a select, usable with many areas. */
 export const ManyAreas: Story = {
   name: 'Many areas',
   render: () => (
@@ -502,7 +502,7 @@ export const SizeDialog: Story = {
   ),
   play: async () => {
     await settle()
-    // The action, then the item on its own line (P5.28 item 6).
+    // The action, then the item on its own line.
     const dialog = within(document.body).getByRole('dialog', { name: 'Resize Table 9' })
     await expect(within(dialog).getByRole('textbox', { name: 'Width' })).toHaveValue('340')
   },
@@ -753,7 +753,7 @@ export const LongText: Story = {
 
 /**
  * The same plan with long second lines: a line that does not fit its table is left out on the
- * plan, never cut (P5.28 item 24); the list and the name say it whole.
+ * plan, never cut; the list and the name say it whole.
  */
 export const LongTextPlan: Story = {
   name: 'Long text, plan',
@@ -831,8 +831,8 @@ export const PhoneWidth: Story = {
 }
 
 /**
- * On a phone, the plan view when opened: it fits the screen's width, no sideways scrolling
- * (P5.28 item 27); a label that does not fit its table leaves out its second line or its icon,
+ * On a phone, the plan view when opened: it fits the screen's width, no sideways scrolling;
+ * a label that does not fit its table leaves out its second line or its icon,
  * never cut. The list is the equivalent of the small targets (WCAG 2.5.8).
  */
 export const PhonePlan: Story = {
@@ -928,7 +928,7 @@ export const Japanese: Story = {
   ),
 }
 
-// ── P5.25a: the building's drawing under the plan, polygon areas, how full ──
+// ── The building's drawing under the plan, polygon areas, how full ──
 
 /** The building's drawing is drawn (a `data:` URI decodes at once; the play waits for it). */
 async function drawingShown(canvasElement: HTMLElement) {

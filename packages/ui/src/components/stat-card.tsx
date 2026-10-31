@@ -5,15 +5,15 @@ import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 
 /*
- * StatCard (P4.6, the owner's decision, docs/decisions.md "Dashboard"): one number on a dashboard.
+ * StatCard: one number on a dashboard.
  * - A card: radius lg, border.default, padding md, no shadow; no decorative icon.
  * - The label xs text.secondary; the value 24px semibold with tabular digits; the change under it
  *   with an arrow (ArrowUpRight or ArrowDownRight, 14px) beside its text — green or red only when
  *   the application says the change is good or bad, otherwise neutral (text.secondary); the
  *   comparison in xs text.secondary ("vs September").
  * - A grey 32px sparkline (text.tertiary, 2px line, no axes) only when the application asks for
- *   one (`trend`, P5.93: none by default), drawn from its values. Values are decimal strings; they become numbers only to place the line
- *   (rule D4: nothing is computed or shown from them).
+ *   one (`trend`; none by default), drawn from its values. Values are decimal strings; they become
+ *   numbers only to place the line (nothing is computed or shown from them).
  * - Loading: a skeleton 104px high.
  */
 

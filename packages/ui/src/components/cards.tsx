@@ -5,8 +5,7 @@ import { Skeleton } from '../primitives/skeleton'
 import type { IconComponent } from './intents'
 
 /*
- * Card, SectionCard and KeyValueList (BUILD-PLAN P2.8; redesigned in P3.2a by the owner,
- * docs/decisions.md "Display"):
+ * Card, SectionCard and KeyValueList:
  * - Card (Mantine Card/Paper): the raised surface, a border.default border, radius lg (12px),
  *   padding md (16px).
  * - SectionCard: the same surface; a header only when there is a title or actions: the title (an
@@ -18,8 +17,8 @@ import type { IconComponent } from './intents'
  *   text.secondary, as written: never upper case or letter-spaced) and the value at the end (13px,
  *   weight 500, text.primary; tabular digits for `numeric`); long values wrap and stay at the end.
  *   8px above and below each row and a 1px border.subtle line between rows, none after the last
- *   row of a column. `columns` 1, 2 or 3 (default 2) by the list's own width (container queries,
- *   P4.9): two from 36rem, three from 54rem, one below, 32px (xl) apart; in a list narrower than
+ *   row of a column. `columns` 1, 2 or 3 (default 2) by the list's own width (container
+ *   queries): two from 36rem, three from 54rem, one below, 32px (xl) apart; in a list narrower than
  *   24rem (a phone) the label stands above the value. A `fullWidth` item spans every column with its label above its value
  *   (notes, descriptions). `groups` splits the list into titled groups (12px, semibold,
  *   text.secondary), 24px apart. Layout "stacked": the label above the value, 2px apart, no lines,
@@ -154,7 +153,7 @@ export type KeyValueListProps = {
 )
 
 /*
- * The list answers to its own width, not the viewport's (P4.9, the owner's review: a two-column
+ * The list answers to its own width, not the viewport's (a two-column
  * list in a phone-width pane broke words in the middle, "Wareho use"): container queries on the
  * list's wrapper. Literal classes, so Tailwind finds them.
  * - Columns: two from a 36rem (576px) wide list, three from 54rem (864px); one below.
@@ -264,7 +263,7 @@ function ItemList({
                   'm-0 min-w-0 text-sm font-medium break-words',
                   // A column: the row's baseline is the value's first line whatever the value is
                   // (an inline-block's own baseline is its last line), so the label stands on the
-                  // first line and a note under the value never moves it (P5.94 item 7). Its items
+                  // first line and a note under the value never moves it. Its items
                   // stand at the row's end (`items-end`): a flex item is a block whose own text
                   // direction would put a Latin value at the wrong end in right-to-left.
                   !stacked &&
@@ -317,7 +316,7 @@ function Group({ group, ...options }: ListOptions & { group: KeyValueGroup }) {
 
 /**
  * Labelled values of a record: an invoice's dates and parties, a person's data. Description
- * lists, optionally in titled groups; empty values show an em dash (Appendix B.5), never a hyphen.
+ * lists, optionally in titled groups; empty values show an em dash, never a hyphen.
  */
 export function KeyValueList(props: KeyValueListProps) {
   const options: ListOptions = {

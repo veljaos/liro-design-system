@@ -11,7 +11,7 @@ import { cn } from './cn'
  * padding 12px by 16px, the floating surface, fading in 150ms. No arrow (Mantine's withArrow is
  * false by default). It keeps 8px inside the screen (the viewport, or a phone frame) and is never
  * wider than the room there; on a phone it always moves to stay on the screen, even where a
- * component chose a fixed side for a stable picture (`avoidCollisions={false}`) (P5.28 item 1).
+ * component chose a fixed side for a stable picture (`avoidCollisions={false}`).
  */
 
 export const Popover = PopoverPrimitive.Root

@@ -9,7 +9,7 @@ import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { StatusTimeline, type StatusTimelineStep } from './status-timeline'
 import { ExampleProvider, expectContentDirection, PhoneFrame, StoryProvider } from './story-frames'
 
-/** The delivery of F-2026-0412 to SEF (the e-invoice system), as the P4.8 example dataset has it. */
+/** The delivery of F-2026-0412 to SEF (the e-invoice system), as the example dataset has it. */
 const DELIVERY: StatusTimelineStep[] = [
   {
     key: 'prepared',
@@ -43,8 +43,8 @@ const meta = {
           '**When:** a process the user may have to push along, in a side panel or a section of ' +
           'a document.\n\n' +
           '**When not — which one:** the dots above a document’s header (LifecycleBar: Draft → ' +
-          'Issued → Sent → Paid, one row); the full record of who changed what (HistoryList, ' +
-          'P5.1); the compact list of comments in a side panel (ActivityList); steps the user ' +
+          'Issued → Sent → Paid, one row); the full record of who changed what (HistoryList); ' +
+          'the compact list of comments in a side panel (ActivityList); steps the user ' +
           'goes through in a form (Stepper, FormWizard); a long job running now (JobProgress).',
       },
     },
@@ -335,7 +335,7 @@ export const Japanese: Story = {
   ),
 }
 
-/** English in a right-to-left page (P3.6). */
+/** English in a right-to-left page. */
 export const EnglishInRtl: Story = {
   name: 'English in RTL',
   render: (args) => (

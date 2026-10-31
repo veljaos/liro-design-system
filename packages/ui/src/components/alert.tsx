@@ -7,25 +7,24 @@ import { Tooltip } from './popover'
 import type { IconComponent } from './intents'
 
 /*
- * Alert and Banner (BUILD-PLAN P2.5): Mantine's Alert with radius md and the "light" variant
- * (owner's decision, 2026-09-28, docs/decisions.md "Feedback"): the tone's subtle background,
- * the title and the icon in the tone's colour. Mantine 9.6.2 Alert.css: 16px padding, a 1px
+ * Alert and Banner: Mantine's Alert with radius md and the "light" variant: the tone's subtle
+ * background, the title and the icon in the tone's colour. Mantine 9.6.2 Alert.css: 16px padding, a 1px
  * transparent border, a 20px icon 16px before the text, the title 13px bold, the message 13px in
  * the text colour, 10px between them. The icons are the toasts': Info, CircleCheck,
  * TriangleAlert, CircleX.
  *
- * Without a tone, an alert is neutral (grey: the neutral tone's bg and fg; P3.6, owner): blue
+ * Without a tone, an alert is neutral (grey: the neutral tone's bg and fg): blue
  * is for actions, and "info" is given only when asked for.
  *
  * Mantine's close button is 16px; ours is 24px (the minimum target, Definition of done), with the
  * same 16px icon and no background.
  *
- * One line, one height (P5.23, the owner's review: "5 checks passed" was 62px for one line). An
+ * One line, one height. An
  * Alert with only a title — no message, or a message that renders nothing (`false`, null, '') —
  * is compact: ONE_LINE padding (10px by 16px), the icon centred on the title's line, 42px high.
  * A Banner is a one-row strip and always uses ONE_LINE. An empty message never adds the 10px gap.
  *
- * Actions on a toned background are neutral (P5.28 item 7, the owner's review: a blue "Excuse
+ * Actions on a toned background are neutral (a blue "Excuse
  * today's absences" inside a yellow warning). An Alert's `actions` stand under its message, a
  * Banner's at the end; both take neutral secondary Buttons only (`family="neutral"` or a neutral
  * intent, `emphasis="secondary"`), never a family colour: the tone already carries the meaning,
@@ -56,7 +55,7 @@ interface ToneLook {
 
 /** Literal classes, so Tailwind finds them. */
 const TONES: Record<AlertTone, ToneLook> = {
-  // Neutral has a border (owner, P3.6): its grey is the page's own, so the box would vanish.
+  // Neutral has a border: its grey is the page's own, so the box would vanish.
   neutral: {
     icon: Info,
     box: 'border-status-neutral-border bg-status-neutral-bg',
@@ -94,7 +93,7 @@ export interface AlertProps extends AlertBaseProps {
   children?: ReactNode
   /**
    * Actions under the message, from the application, in one row at the start: neutral secondary
-   * Buttons only (P5.28 item 7), the main one last.
+   * Buttons only, the main one last.
    */
   actions?: ReactNode
 }
@@ -186,8 +185,7 @@ export interface BannerProps extends AlertBaseProps {
   /** The message, from the application: one or two lines. */
   children: ReactNode
   /**
-   * Actions at the end, e.g. a Button ("Reconnect", "Review"): neutral secondary Buttons only
-   * (P5.28 item 7).
+   * Actions at the end, e.g. a Button ("Reconnect", "Review"): neutral secondary Buttons only.
    */
   actions?: ReactNode
   /**
@@ -219,7 +217,7 @@ export function Banner({
       data-tone={tone}
       className={cn(
         // Border-box: full width with its padding and border, in an application without a reset
-        // (P4.1: it was 34px wider than its container).
+        // (otherwise it is 34px wider than its container).
         'box-border flex w-full flex-wrap items-center gap-x-4 gap-y-2.5 rounded-md border border-solid border-transparent font-sans',
         ONE_LINE,
         look.box,

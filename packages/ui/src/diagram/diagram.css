@@ -1,5 +1,5 @@
 /*
- * Diagram (P5.26): the structure React Flow needs, in Liro tokens. React Flow's own style sheets
+ * Diagram: the structure React Flow needs, in Liro tokens. React Flow's own style sheets
  * (style.css and base.css) are not used: both carry raw colours. These rules are adapted from
  * @xyflow/react 12.12.0's dist/base.css (MIT, © webkid GmbH; THIRD-PARTY-NOTICES.md), keeping
  * only what positions and layers the parts; every colour is a Liro meaning. React Flow lays its

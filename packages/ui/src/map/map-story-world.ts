@@ -1,10 +1,10 @@
 /*
- * Countries for the RegionChart stories and examples (P5.41), from Natural Earth's 1:110m Admin 0
+ * Countries for the RegionChart stories and examples, from Natural Earth's 1:110m Admin 0
  * boundaries (public domain) as redistributed by `world-atlas` 2.0.2 (ISC) and turned into GeoJSON
  * by `topojson-client` 3.1.0 (ISC) — development dependencies only: the package ships no geometry
  * (a real application passes its own). Not exported from `@veljaos/ui/map`.
  *
- * The maps follow the law of the Republic of Serbia (P5.31a): Kosovo and Metohija is part of
+ * The maps follow the law of the Republic of Serbia: Kosovo and Metohija is part of
  * Serbia. Natural Earth draws it as a polygon of its own; here it is merged into Serbia's area, with
  * no shape, border or name of its own (`map-story-world.test.ts`). A real application passes its
  * own geometry.
@@ -78,5 +78,3 @@ export const COUNTRY_SHAPES = {
   hungary: country('Hungary'),
   albania: country('Albania'),
 } as const satisfies Record<string, MapAreaGeometry>
-
-export type CountryKey = keyof typeof COUNTRY_SHAPES

@@ -17,7 +17,7 @@ import { EMPLOYEE } from './examples-story-data'
 import { BC_ROUTES } from './data-BC'
 
 /*
- * The example screens (P4.8): Liro as it will look, one company and one dataset, the screens
+ * The example screens: Liro as it will look, one company and one dataset, the screens
  * linked into one walk-through. They use only the public entry points — `@veljaos/ui` and
  * `@veljaos/ui/charts` — as the Core will. Navigation goes through the provider's
  * `linkComponent`: a link to "#/…" changes the example's route instead of the page (the Core
@@ -183,7 +183,7 @@ export const HR_TABS: ModuleTab[] = [
 ]
 
 /**
- * The Reports module (F5, P5.89): the overview, the trial balance, the VAT return and the cost
+ * The Reports module (F5): the overview, the trial balance, the VAT return and the cost
  * analysis — the four kept screens of the "Overview and analysis" floorplan, one module.
  */
 export function reportsTabs(current: 'overview' | 'trial' | 'vat' | 'costs'): ModuleTab[] {
@@ -202,9 +202,8 @@ export function hrTabs(key: string): ModuleTab[] {
 }
 
 /**
- * The application's status-to-tone map (BUILD-PLAN A.7, the application's data, never the Design
- * System's): every status of the examples' application, one tone each, used by every screen (P5.23,
- * the owner's review: "Cancelled" was neutral on some screens). docs/decisions.md lists them. Blue
+ * The application's status-to-tone map (the application's data, never the Design
+ * System's): every status of the examples' application, one tone each, used by every screen. Blue
  * (info) is for a document on its way; red (danger) for what failed or ended badly — overdue,
  * rejected, cancelled, suspended; warning for what waits on someone.
  */
@@ -238,7 +237,7 @@ export const TONES = {
   Submitted: 'success',
   Imported: 'neutral',
   'In progress': 'info',
-  // An orchestrator's run (P5.26)
+  // An orchestrator's run
   Failed: 'danger',
   // A bank statement's lines
   'Suggestion ready': 'info',
@@ -253,19 +252,19 @@ export const TONES = {
   Pending: 'warning',
   Expired: 'warning',
   Locked: 'warning',
-  // Appointments and school (P5.17)
+  // Appointments and school
   Confirmed: 'success',
   Excused: 'neutral',
   'Not excused': 'warning',
-  // Legal acts (P5.27): never blue
+  // Legal acts: never blue
   'In force': 'success',
   'Partly in force': 'warning',
   'Not yet in force': 'neutral',
   'No longer in force': 'danger',
   Final: 'success',
-  // P5.28 screens: an excuse sent, waiting for the class teacher
+  // Screens: an excuse sent, waiting for the class teacher
   'Excuse sent': 'neutral',
-  // P5.29 superadmin: incidents, security events, tenants' health, announcements. An incident
+  // Superadmin: incidents, security events, tenants' health, announcements. An incident
   // still open is red, one being watched waits (warning); a security event not yet looked at
   // waits on someone (warning), one being investigated is on its way (info). Severity: the worst
   // red, the middle warning, the least neutral. An announcement on screen now is success.
@@ -287,7 +286,7 @@ export const TONES = {
   Scheduled: 'neutral',
   Live: 'success',
   Ended: 'neutral',
-  // P5.29 admin: sign-ins, monitored things, keys, certificates, two-factor sign-in, alerts
+  // Admin: sign-ins, monitored things, keys, certificates, two-factor sign-in, alerts
   Success: 'success',
   Blocked: 'danger',
   Up: 'success',
@@ -302,9 +301,9 @@ export const TONES = {
   'Waiting for setup': 'warning',
   Critical: 'danger',
   Warning: 'warning',
-  // P5.34 ai: a blog post on the blog (a draft and a scheduled post are neutral, as above)
+  // Ai: a blog post on the blog (a draft and a scheduled post are neutral, as above)
   Published: 'success',
-  // ── P5.80 reports: a scheduled report's run and the schedule itself. A run skipped because it
+  // ── Reports: a scheduled report's run and the schedule itself. A run skipped because it
   // had nothing to send and a schedule paused on purpose wait on no one (neutral).
   Skipped: 'neutral',
   Paused: 'neutral',
@@ -326,7 +325,7 @@ export function statusBadge(status: ExampleStatus) {
 export const HOME_COMPANY = 'kvadrat'
 
 /**
- * Another person signed in at another organisation (P5.17, P5.25: a clinic's receptionist, a
+ * Another person signed in at another organisation (a clinic's receptionist, a
  * restaurant's manager): the user menu shows them, the switcher only their organisations, the
  * search their commands; Milica's notifications are not theirs, so there is no bell.
  */
@@ -453,7 +452,7 @@ export function Shell({
         label: 'Profile',
         icon: UserRound,
         onSelect: () => {
-          // P5.62: Milica's own profile (group BC).
+          // Milica's own profile.
           navigate(BC_ROUTES.preferences)
         },
       },

@@ -13,14 +13,14 @@ const meta = {
       description: {
         component:
           '**Stepper** — the steps of a process and where the user is (a wizard, an onboarding); ' +
-          'Mantine size sm with 32px icons in the primary colour (the old look). With ' +
+          'Mantine size sm with 32px icons in the primary colour. With ' +
           '`onStepClick` the steps become buttons. On phones (below 48em, or `layout="phone"`) ' +
-          'it is one line, "Step 2 of 4 · Users", over a thin bar (P5.23). **ProgressBar** — how far a task has come ' +
+          'it is one line, "Step 2 of 4 · Users", over a thin bar. **ProgressBar** — how far a task has come ' +
           '(an import, an upload); 5px, fully rounded, filling from the start side, so it flips ' +
           'in right-to-left; always named by `label`. **Skeleton** — placeholder shapes while ' +
           'content loads, radius md; mark the loading region `aria-busy`.\n\n' +
-          '**When not:** a spinner instead of a number that is only updating (SettlingValue, ' +
-          'P2.8); a Stepper for navigation between independent pages (Tabs).',
+          '**When not:** a spinner instead of a number that is only updating (SettlingValue); ' +
+          'a Stepper for navigation between independent pages (Tabs).',
       },
     },
   },
@@ -101,7 +101,7 @@ export const Skeletons: Story = {
 }
 
 /**
- * Phones (P5.23): one line "Step 2 of 4 · Users" with the current step's description, over a thin
+ * Phones: one line "Step 2 of 4 · Users" with the current step's description, over a thin
  * bar filled to the current step — never a row of circles wrapping into two rows.
  */
 export const StepperPhone: Story = {

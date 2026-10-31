@@ -317,7 +317,7 @@ describe('typography equals Appendix A.5', () => {
   })
 })
 
-describe('fonts (P1.2)', () => {
+describe('fonts', () => {
   const tokens = tokensCss()
   const theme = themeCss()
 

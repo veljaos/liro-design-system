@@ -1,5 +1,5 @@
-// Refreshes the visual baselines locally, inside the same pinned Playwright image as CI
-// (BUILD-PLAN P0.4). Needs Docker. Usage, from the repository root:
+// Refreshes the visual baselines locally, inside the same pinned Playwright image as CI.
+// Needs Docker. Usage, from the repository root:
 //
 //   node scripts/update-baselines.mjs
 //

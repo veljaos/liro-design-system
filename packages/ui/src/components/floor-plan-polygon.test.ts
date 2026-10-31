@@ -20,7 +20,7 @@ import {
 } from './floor-plan-logic'
 
 /*
- * P5.25a: polygon areas (bounds, centroid, inside, the label's point, SVG points) and an item's
+ * Polygon areas (bounds, centroid, inside, the label's point, SVG points) and an item's
  * level (the bar's CSS width, never a number; the words).
  */
 

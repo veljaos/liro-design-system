@@ -21,14 +21,14 @@ import type { FilterDefinition } from './filter-logic'
 import { usePhone } from './use-phone'
 
 /*
- * LookupDialog (BUILD-PLAN P5.19, "Search all…"): the whole catalogue — tens of thousands of
+ * LookupDialog ("Search all…"): the whole catalogue — tens of thousands of
  * customers, items or accounts — in a large dialog, opened from a LookupField's last entry. The
  * search and filters (FilterBar), the table with the application's columns (DataTable), keyset
  * paging (the application's cursor: `hasNext` / `onNext`, CursorPagination under the table) and
  * keyboard selection. The application searches, filters and pages on the server; the dialog only
  * renders what it is given and reports.
  *
- * Keyboard (decided, docs/decisions.md "Liro patterns (Phase 5 part 1)"): the search field takes the focus when the dialog
+ * Keyboard: the search field takes the focus when the dialog
  * opens; ArrowDown moves the focus to the first result; ArrowDown / ArrowUp move between results
  * (ArrowUp from the first back to the search field), PageDown / PageUp by ten, Home / End to the
  * first and last; Enter or Space chooses the focused result; typing on a result sends the focus
@@ -40,8 +40,8 @@ import { usePhone } from './use-phone'
  *
  * Size: a 960px dialog (at most 90% of the width) with the table scrolling inside 55% of the
  * screen's height under a sticky header; on phones (below 48em, or `layout`) a full-screen sheet
- * with the results as a flat list of compact rows (the P4.9d sheet, `side="full"`; P5.28 item 13:
- * name, "code · kind" and the price, never every column as a detail card).
+ * with the results as a flat list of compact rows (`side="full"`: name, "code · kind" and the
+ * price, never every column as a detail card).
  */
 
 export interface LookupDialogProps<Row extends RowData> {
@@ -67,10 +67,10 @@ export interface LookupDialogProps<Row extends RowData> {
   onFilterValuesChange?: (values: DataTableFilters) => void
   /** How many filters stand beside the search on desktop. Default 2. */
   inlineFilters?: number
-  /** The columns the application chose for this catalogue; `sortable` ones sort (P5.23). */
+  /** The columns the application chose for this catalogue; `sortable` ones sort. */
   columns: readonly DataTableColumn<Row>[]
   /**
-   * The current sort (the application sorts its search, P5.23): with `onSortChange` the sortable
+   * The current sort (the application sorts its search): with `onSortChange` the sortable
    * columns' headers sort, and phones get FilterBar's "Sort" menu.
    */
   sort?: DataTableSort
@@ -93,7 +93,7 @@ export interface LookupDialogProps<Row extends RowData> {
   /** The application is searching: skeletons on the first load, a small loader after. */
   loading?: boolean
   /**
-   * A result on a phone (DataTable's card, P5.28 item 13): one compact row — the title (default
+   * A result on a phone (DataTable's card): one compact row — the title (default
    * `getRowLabel`), the `subtitle` ("code · kind") and the `badge` at its end (the price) — and
    * under it only the columns `details` names (default none, where DataTable shows every column).
    */

@@ -3,7 +3,7 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * The plot of a chart whose marks are reached one by one (P5.93 item 44: CandlestickChart,
+ * The plot of a chart whose marks are reached one by one (CandlestickChart,
  * FunnelChart, ScatterChart, Heatmap, SankeyChart, MatrixChart, Treemap): the keyboard, the
  * tooltip and the announcement the Recharts charts get from Recharts' accessibility layer, for
  * marks drawn by Recharts with our own shapes or by our own SVG.

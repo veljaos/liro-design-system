@@ -1,5 +1,5 @@
 /*
- * Group Y's example data (P5.35): the employee portal of Kvadrat Gradnja d.o.o. as Nikola Marković,
+ * The example data: the employee portal of Kvadrat Gradnja d.o.o. as Nikola Marković,
  * a site worker on the building site "Residential building Liman 4", sees it on 14.10.2026 at
  * 09:40 — his payslips, his leave and its approvals, an annex to sign, his shifts and his details
  * with a change waiting for HR. Fictitious: every name, number, account and amount is invented and
@@ -29,7 +29,7 @@ export const Y_ROUTES = {
   leave: '/me/leave',
   leaveRequest: (id: string) => `/me/leave/${id}`,
   newLeave: '/me/leave/new',
-  /** A new request of a kind (and reason), as a common question starts it (P5.94 item 20). */
+  /** A new request of a kind (and reason), as a common question starts it. */
   newLeaveOf: (kind: string, reason?: string) =>
     `/me/leave/new?kind=${kind}${reason === undefined ? '' : `&reason=${reason}`}`,
   /** The new request half written, the application's count of working days shown. */
@@ -40,9 +40,9 @@ export const Y_ROUTES = {
   details: '/me/details',
   /** My details with the change request open on a field (a common question starts it). */
   detailsChange: (field: string) => `/me/details?change=${field}`,
-  /** Every question and its answer, searched and by category (P5.96 item 1). */
+  /** Every question and its answer, searched and by category. */
   questions: '/me/questions',
-  /** One answer on its own page (P5.96 item 1). */
+  /** One answer on its own page. */
   answer: (id: string) => `/me/questions/${id}`,
 } as const
 
@@ -159,9 +159,9 @@ export const LEAVE_TONES: Readonly<Record<LeaveState, Tone>> = {
 export interface LeaveRequest {
   id: string
   kind: string
-  /** A paid leave's reason ("Moving"), P5.94 item 3. */
+  /** A paid leave's reason ("Moving"). */
   cause?: string
-  /** The proof sent with it (P5.94 item 3): what the approvers open. */
+  /** The proof sent with it: what the approvers open. */
   attachments?: Attachment[]
   from: string
   to: string
@@ -183,7 +183,7 @@ const SUBMITTED = (at: string): StatusTimelineStep => ({
   detail: EMPLOYEE.name,
 })
 
-/** The approval of a request sent now: the site manager first, then HR (P5.94 item 3). */
+/** The approval of a request sent now: the site manager first, then HR. */
 export function sentSteps(): StatusTimelineStep[] {
   return [
     SUBMITTED(`${Y_TODAY}T09:40:00+02:00`),
@@ -331,7 +331,7 @@ export const LEAVE_REQUESTS: LeaveRequest[] = [
 ]
 
 /**
- * What a request must be sent with (P5.94 item 3): every kind of request may need proof, set by
+ * What a request must be sent with: every kind of request may need proof, set by
  * the application's data — a death certificate, a marriage certificate, proof of a new address,
  * a doctor's note. A `required` one blocks sending until a file is attached.
  */
@@ -631,7 +631,7 @@ export function annexSigners(nikola: 'waiting' | 'signed' | 'declined', reason?:
   ]
 }
 
-/** The annex (its PDF is liro-folio's, P5.95). */
+/** The annex (its PDF is liro-folio's). */
 export const ANNEX = {
   title: 'Annex 2 to employment contract RU-2025-088',
 }
@@ -672,7 +672,7 @@ export interface ChangeRequest {
   submitted: string
   state: 'Waiting for HR' | 'Approved'
   note?: string
-  /** The proof sent with it (P5.94 item 3). */
+  /** The proof sent with it. */
   attachments?: Attachment[]
 }
 
@@ -695,7 +695,7 @@ export const CHANGE_REQUESTS: ChangeRequest[] = [
   },
 ]
 
-/** The fields he may ask HR to change, and the proof each needs (P5.94 item 3: as data). */
+/** The fields he may ask HR to change, and the proof each needs (as data). */
 export const CHANGEABLE: {
   value: string
   label: string
@@ -740,9 +740,9 @@ export const CHANGEABLE: {
   },
 ]
 
-// ── Questions and answers (P5.94 item 20, P5.96 item 1) ──────────────────────────────────────────────────────────
+// ── Questions and answers ──────────────────────────────────────────────────────────
 
-/** The categories of the portal's questions (P5.96 item 1: ten, the first four as before). */
+/** The categories of the portal's questions (ten). */
 export const QUESTION_CATEGORIES = QA_CATEGORIES
 
 /** A common question; `request` is the request that does it (its label and its route). */
@@ -914,7 +914,7 @@ function generatedRequest(question: StoryQuestion): EmployeeQuestion['request'] 
 }
 
 /**
- * Every question of the portal (P5.96 item 1): the ten most asked first, then 320 more from the
+ * Every question of the portal: the ten most asked first, then 320 more from the
  * library's story data (fictitious, made without randomness) — 330 in all.
  */
 export const ALL_EMPLOYEE_QUESTIONS: EmployeeQuestion[] = [

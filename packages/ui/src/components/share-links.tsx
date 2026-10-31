@@ -8,13 +8,13 @@ import { Button } from './button'
 import type { IconComponent } from './intents'
 
 /*
- * ShareLinks (BUILD-PLAN P5.39): share a page — an article, a public record — by its address.
+ * ShareLinks: share a page — an article, a public record — by its address.
  * - A named group: "Share" (xs medium text.secondary), then "Copy link" (a neutral button; the
  *   address goes to the clipboard and a polite "Link copied" — or "The link could not be copied"
  *   — stands beside it until the next press), then the application's places to share as neutral
  *   link buttons (its words and icons; an external one opens in a new tab with ExternalLink at
  *   its end). Never a network's colour or logo as a fill: the words carry them (as the sign-in
- *   providers' buttons, D18).
+ *   providers' buttons).
  * - `onCopy` reports the copy (the application may count it).
  */
 

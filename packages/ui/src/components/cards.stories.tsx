@@ -26,7 +26,7 @@ const meta = {
           '`fullWidth` items (notes) span the columns with the label above; `groups` adds small ' +
           'titled groups. Layout "stacked": the label above the value, no lines, for short ' +
           'cards. An empty value is "—".\n\n' +
-          '**When not:** a list of many records (DataTable); a form (fields in FormSection, P3.5).',
+          '**When not:** a list of many records (DataTable); a form (fields in FormSection).',
       },
     },
   },
@@ -162,7 +162,7 @@ export const LongTextPhone: Story = {
 }
 
 /**
- * Text without a single space at phone width (P5.90 item 7): the title, the values and a status
+ * Text without a single space at phone width: the title, the values and a status
  * wrap inside the card, never past its edge.
  */
 export const UnbrokenPhone: Story = {
@@ -218,7 +218,7 @@ export const Japanese: Story = {
 }
 
 /**
- * English in a right-to-left page (P3.6): the card title and description, the labels and a
+ * English in a right-to-left page: the card title and description, the labels and a
  * person's line keep their own order; labels stay at the start (the right), values at the end.
  */
 export const EnglishInRtl: Story = {

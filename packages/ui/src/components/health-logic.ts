@@ -3,7 +3,7 @@ import type { LiroMessages } from '../provider/messages'
 import { instantText } from './admin-logic'
 
 /*
- * HealthList's logic, without React (P5.29; AGENTS.md C7): the kinds of state a monitored thing
+ * HealthList's logic, without React: the kinds of state a monitored thing
  * can be in, and the facts a row writes under its figures — the last success and the last error
  * with its message. The states, their names and tones, the figures and the times are the
  * application's; nothing here counts, compares or judges them.
@@ -37,7 +37,7 @@ export interface HealthTimes {
   /**
    * The last failure: when (an ISO instant) and the application's message; optionally its raw
    * response or log (`detail`, secrets already masked by the application) in a language for
-   * CodeBlock ("json", "xml", "ansi"), shown on request under the row (P5.93).
+   * CodeBlock ("json", "xml", "ansi"), shown on request under the row.
    */
   lastError?: { at: string; message: string; detail?: string; detailLanguage?: string }
 }
@@ -45,7 +45,7 @@ export interface HealthTimes {
 /**
  * The facts a row writes: "Last success 14.10.2026. 09:35" ("Never" when null), "Last error
  * 14.10.2026. 08:12" and the error's message, each only when reported. The instants keep their own
- * date and clock (`instantText`), as every instant in the library (P4.9).
+ * date and clock (`instantText`), as every instant in the library.
  */
 export function healthFacts(
   times: HealthTimes,

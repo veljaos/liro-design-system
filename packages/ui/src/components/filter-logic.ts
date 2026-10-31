@@ -34,14 +34,14 @@ export type FilterDefinition = FilterBase &
     | {
         type: 'numberRange'
         decimals?: number
-        /** An amount range: the ends are MoneyFields with this currency (P3.6). */
+        /** An amount range: the ends are MoneyFields with this currency. */
         currency?: string
       }
     | { type: 'boolean' }
     | { type: 'text' }
     | {
         /**
-         * A choice in a hierarchy (P5.27: an act's area): a TreeView in the drawer, never in the
+         * A choice in a hierarchy (an act's area): a TreeView in the drawer, never in the
          * row (a tree needs the room), with checkboxes (`selection` 'multiple', the default) or
          * one node ('single'). Checking a branch checks its loaded descendants
          * (`toggleTreeSelection`); the pill names the highest chosen nodes (`treeFilterLabels`).

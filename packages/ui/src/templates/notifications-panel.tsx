@@ -7,8 +7,8 @@ import { useLiro } from '../provider/liro-provider'
 import { notificationDay, type NotificationItem } from './notifications-logic'
 
 /*
- * NotificationsPanel (P4.9, the owner's review): what the bell opens. The bell keeps its red dot
- * without a number (P4.1); the panel says how many are unread.
+ * NotificationsPanel: what the bell opens. The bell keeps its red dot
+ * without a number; the panel says how many are unread.
  * - 360px wide (the screen less 32px on a phone); a header row: "Notifications" (sm semibold)
  *   and the unread count (xs text.secondary) at the start, "Mark all as read" (a small subtle
  *   neutral button) at the end while anything is unread;
@@ -16,7 +16,7 @@ import { notificationDay, type NotificationItem } from './notifications-logic'
  *   its record (through `linkComponent`) — an 8px neutral dot (surface.inverse) at the start
  *   while unread, the title (13px, semibold while unread), then the company and the time (xs
  *   text.tertiary): today the time, otherwise the date. Unread is also in the link's name. No
- *   blue: a notification is not an action (D17);
+ *   blue: a notification is not an action;
  * - "View all" at the bottom, a link to the NotificationsPage.
  * Opening a notification calls `onOpen` (the application marks it read) and follows the link.
  */

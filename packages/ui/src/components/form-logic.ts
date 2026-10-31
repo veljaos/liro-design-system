@@ -1,10 +1,9 @@
 /*
- * The logic of the form layout (BUILD-PLAN P3.5; owner's decisions, 2026-10-01, docs/decisions.md
- * "Form layout"): when the bottom action bar shows, which tab to open for the first error, where
+ * The logic of the form layout: when the bottom action bar shows, which tab to open for the first error, where
  * a wizard may go, and finding the first invalid field in the page.
  */
 
-/** 'auto' shows the bottom bar only while the top actions are out of view (P3.6). */
+/** 'auto' shows the bottom bar only while the top actions are out of view. */
 export type StickyActions = 'auto' | 'always' | 'never'
 
 /** Whether the bottom action bar is shown. */

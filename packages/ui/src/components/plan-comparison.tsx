@@ -16,7 +16,7 @@ import { CURRENT_TONE, StatusBadge } from './status-badge'
 import { usePhone } from './use-phone'
 
 /*
- * PlanComparison (BUILD-PLAN P5.36): plans side by side — what each costs and offers — and one
+ * PlanComparison: plans side by side — what each costs and offers — and one
  * of them chosen. Generic: the plans (a subscription's tiers, a service's packages, a membership's
  * levels), their prices, the features and what each plan offers of them are the application's;
  * the component shows them and reports the choice. It never prices, recommends or compares by
@@ -27,7 +27,7 @@ import { usePhone } from './use-phone'
  *   direction) move and choose.
  * - **Desktop: a table**, plans as columns and features as rows (`<th scope="col">` per plan,
  *   `<th scope="row">` per feature, a heading row per feature group). The chosen plan's column
- *   is the neutral selection (D17): surface.selected down the column and a 3px border.selected
+ *   is the neutral selection: surface.selected down the column and a 3px border.selected
  *   bar over its header; only the radio's dot is blue. A wide table scrolls sideways inside its
  *   own region, the features' column first.
  * - **Phones: one card per plan**, the radio, name and price in the card's header and the
@@ -39,8 +39,8 @@ import { usePhone } from './use-phone'
  *   technology; `false` / nothing — a dash and "Not included"; or the application's words or
  *   figure ("30 users").
  * - **A plan that cannot be chosen** (`unavailableReason`) has a disabled radio and the reason in
- *   words under it (D3); `readOnly` shows the comparison and the choice that cannot be changed
- *   here: the radios in the read-only look, focusable, nothing changes (P5.93 item 1).
+ *   words under it; `readOnly` shows the comparison and the choice that cannot be changed
+ *   here: the radios in the read-only look, focusable, nothing changes.
  */
 
 export interface PlanComparisonProps {
@@ -61,7 +61,7 @@ export interface PlanComparisonProps {
   /** The plan chosen at first (uncontrolled). */
   defaultValue?: string
   onChange?: (planId: string) => void
-  /** The choice is shown but cannot be changed here (the read-only look, P5.93). */
+  /** The choice is shown but cannot be changed here (the read-only look). */
   readOnly?: boolean
   /** An error under the label (the application's words: "Choose a plan."). */
   error?: ReactNode

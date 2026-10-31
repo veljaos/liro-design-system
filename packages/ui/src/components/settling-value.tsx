@@ -3,22 +3,22 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * SettlingValue (BUILD-PLAN P2.8): a value the server is recomputing — a total while lines are
+ * SettlingValue: a value the server is recomputing — a total while lines are
  * typed — shown calmly.
  * - The last confirmed value stays, unchanged, while a new one is pending: never blank, never a
  *   spinner instead of the number, never an intermediate value (the application passes only
  *   confirmed values).
  * - Reserved width and tabular digits, so nothing reflows in left-to-right or right-to-left: the
  *   number keeps at least the widest width it has had (or `reserveChars`), aligned to its end.
- *   P5.94 (item 14): the width is the text's own, measured in pixels — counted in characters it
- *   left a different empty space before each amount ("RSD" and the separators are narrower than a
- *   digit), so the gaps beside the amounts differed. The value stands on the line's baseline (its
- *   dot slot is centred apart, so an empty slot no longer lowers the number).
+ *   The width is the text's own, measured in pixels: counted in characters it would leave a
+ *   different empty space before each amount ("RSD" and the separators are narrower than a
+ *   digit). The value stands on the line's baseline (its dot slot is centred apart, so an empty
+ *   slot never lowers the number).
  * - The new value is announced once, politely, when it settles (a live region of its own; the
  *   visible number is not live, so typing does not make it chatter).
  * - `unavailableText` when no value can be shown (offline, say); "—" when there is none.
  *
- * The indicator (owner's decision, 2026-09-28, docs/decisions.md "Display"): a 6px dot in
+ * The indicator: a 6px dot in
  * text.tertiary at the number's start, in a slot that is always reserved, so showing or hiding it
  * never moves the number; shown only once the value has been pending for more than 300ms, so a
  * fast answer shows no dot and nothing flickers; pulsing (the skeleton's pulse), static with

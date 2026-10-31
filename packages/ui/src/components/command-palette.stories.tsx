@@ -18,8 +18,8 @@ const meta = {
       description: {
         component:
           '**What for:** one place to find anything and do anything, from the keyboard: ' +
-          "Ctrl/Cmd+K (or Ctrl/Cmd+P) opens it anywhere. The previous Design System's " +
-          'Spotlight: a search field, actions first and places to go ("Go to") after them, the ' +
+          'Ctrl/Cmd+K (or Ctrl/Cmd+P) opens it anywhere. ' +
+          'A search field, actions first and places to go ("Go to") after them, the ' +
           'typed text highlighted in the results; an item matches by its label, description ' +
           'or keywords. With `onSearch` the application searches on the server (after 300ms, ' +
           'with `loading`); without it, the items are filtered here. Arrows move, Enter runs, ' +

@@ -1,5 +1,5 @@
 /*
- * Maps (P5.41): the structure Leaflet needs, in Liro tokens. Leaflet's own `leaflet.css` is not
+ * Maps: the structure Leaflet needs, in Liro tokens. Leaflet's own `leaflet.css` is not
  * used (raw colours, its controls' images). These rules are adapted from Leaflet 1.9.4's
  * `dist/leaflet.css` (BSD-2-Clause, © Volodymyr Agafonkin and CloudMade; THIRD-PARTY-NOTICES.md),
  * keeping only what positions and layers the panes, tiles and SVG shapes; Leaflet's controls,
@@ -17,7 +17,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 /*
- * The focus ring only when the focus came from the keys (P5.96a): MapCanvas marks it
+ * The focus ring only when the focus came from the keys: MapCanvas marks it
  * (`data-keyboard-focus`), never after a press of the pointer or a touch.
  */
 .liro-map[data-keyboard-focus]:focus {
@@ -101,7 +101,7 @@
 }
 /*
  * An area that answers the pointer (its tooltip) but cannot be chosen — the last level of a
- * drill-down (P5.94 item 1) — keeps the map's own cursor: nothing says it opens.
+ * drill-down — keeps the map's own cursor: nothing says it opens.
  */
 .liro-map .leaflet-pane > svg path.leaflet-interactive.is-static {
   cursor: inherit;
@@ -113,9 +113,9 @@
 
 /*
  * Areas: a line in their tone, a light fill; under the pointer a little darker; the chosen one
- * filled with its own colour, clearly stronger, with a thicker line (P5.93 item 37) — its label
- * and its row in the list say it too, so the choice is never colour alone (D17). Every area takes
- * the charts' main blue (`main`, P5.94 item 17) unless the data gives it another tone.
+ * filled with its own colour, clearly stronger, with a thicker line — its label
+ * and its row in the list say it too, so the choice is never colour alone. Every area takes
+ * the charts' main blue (`main`) unless the data gives it another tone.
  */
 .liro-map path.liro-map-area {
   stroke-width: 2;
@@ -152,7 +152,7 @@
 }
 /*
  * The area under the pointer and the area the keys reached: one look for every area, whatever its
- * size (P5.96b) — a stronger line and fill, drawn over its neighbours (MapCanvas raises it), so
+ * size — a stronger line and fill, drawn over its neighbours (MapCanvas raises it), so
  * its whole outline is one solid line; the name is in the tooltip, never on the area.
  */
 .liro-map path.liro-map-area.is-hovered,
@@ -192,9 +192,9 @@
 }
 
 /*
- * A region chart (P5.41): areas filled by their value's step (the fill is set per area: a ramp's
+ * A region chart: areas filled by their value's step (the fill is set per area: a ramp's
  * meaning at an opacity, on the card's own surface, or the "No data" hatching), with a thin line
- * between neighbours; the chosen area keeps its fill and takes the neutral selected line (D17);
+ * between neighbours; the chosen area keeps its fill and takes the neutral selected line;
  * the area under the pointer and the area the keys reached the same line in the text colour.
  */
 .liro-map.liro-map-raised {

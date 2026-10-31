@@ -1,5 +1,5 @@
 /*
- * ClockRecordList's logic (BUILD-PLAN P5.24e), without React: reading a typed clock time and
+ * ClockRecordList's logic, without React: reading a typed clock time and
  * telling a clock-out on a later day. Times are clock times of the tenant ("07:30"); the
  * application turns them into instants. Nothing is computed from them: the duration comes from
  * the application.
@@ -9,8 +9,8 @@ import { parseTimeText } from './time-logic'
 
 /**
  * A clock time as typed — "7:30", "07.30", "0730", "730", "7" — as "HH:MM", or null when it is not
- * a time of day (B.4: unreadable is null). Empty text is null too; the caller tells empty from
- * unreadable. The library's one time parser, `parseTimeText` (P5.90 item 12).
+ * a time of day (unreadable is null). Empty text is null too; the caller tells empty from
+ * unreadable. The library's one time parser, `parseTimeText`.
  */
 export function parseClockTime(text: string): string | null {
   return parseTimeText(text)

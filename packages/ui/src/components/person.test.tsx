@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { LiroProvider } from '../provider/liro-provider'
 import { initialsOf, PersonAvatar } from './person'
 
-describe('initialsOf (Appendix B.9)', () => {
+describe('initialsOf', () => {
   it('takes the first letter of the first and the last word', () => {
     expect(initialsOf('Ana Jovanović', 'sr-Latn')).toBe('AJ')
     expect(initialsOf('Ana Marija Jovanović', 'sr-Latn')).toBe('AJ')

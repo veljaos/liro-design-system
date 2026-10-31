@@ -10,16 +10,16 @@ import { ReasonConfirmDialog, type ConfirmAnswer, type ConfirmReason } from './c
 import { RelatedDocuments, type RelatedDocument } from './panel-lists'
 
 /*
- * DuplicateWarning (BUILD-PLAN P5.19): the Core found records that look like the one being
+ * DuplicateWarning: the Core found records that look like the one being
  * created — the same tax number, or the same name — and says so before anything is saved, in the
  * record form and in an import's preview.
  * - A warning Alert (the tone's background, icon and title): the title and text from the
  *   application ("A customer with tax number 104987265 exists"), then the existing records as
  *   links — kind, number or name, state — through the provider's linkComponent (RelatedDocuments:
- *   P4.9 rule 7, a reference is a link with its kind and state).
+ *   a reference is a link with its kind and state).
  * - Two choices: "Open existing" (with one match, a link to it drawn as a button) and "Create
- *   anyway" (the main choice last), both neutral secondary buttons in the Alert's actions (P5.28
- *   item 7: never a family colour on the warning's background). When the application asks for a reason (`reasonRequired`), Create
+ *   anyway" (the main choice last), both neutral secondary buttons in the Alert's actions (never
+ *   a family colour on the warning's background). When the application asks for a reason (`reasonRequired`), Create
  *   anyway opens a ReasonConfirmDialog first (its list of reasons, or a written one) and reports
  *   the answer.
  * The DS finds no duplicates itself: the matches are the Core's.

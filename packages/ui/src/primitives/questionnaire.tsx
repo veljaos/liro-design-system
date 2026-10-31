@@ -5,8 +5,8 @@ import { TEXT_DIRECTION } from './classes'
 import { cn } from './cn'
 
 /*
- * Questionnaire (shadcn/ui `questionnaire`, registry style radix-vega, fetched 2026-10-08; on the
- * unstyled `@shadcn/react/questionnaire` 0.3.1, adapted as the P2.1 primitives). A form of
+ * Questionnaire (shadcn/ui `questionnaire`, registry style radix-vega, on the unstyled
+ * `@shadcn/react/questionnaire` 0.3.1, adapted to the Liro tokens). A form of
  * questions shown one at a time: each question a fieldset with its legend, its choices as real
  * radio buttons or checkboxes, and its error; the number keys choose a choice while the user is
  * not typing (`shortcuts="numbers"`), and the item whose turn it is takes the focus when it
@@ -15,12 +15,12 @@ import { cn } from './cn'
  * Adapted:
  * - Liro meanings. A choice is a 44px row (shadcn's min-h-11, the touch target) with a 1px
  *   border.default line, radius md, padding 12px 16px, 13px text; surface.hover under the pointer;
- *   **a chosen choice is the neutral selection (D17): surface.selected with a border.selected
+ *   **a chosen choice is the neutral selection: surface.selected with a border.selected
  *   line** (shadcn: the primary colour at 40%); its radio or checkbox is the Liro control (20px,
  *   border.control, filled with brand.solid when checked — checked controls stay blue); the
  *   keyboard focus is the Liro focus ring around the whole row. Disabled: surface.disabled and
- *   text.disabled, no opacity (Appendix B.6). Invalid: the danger border (Fields, "The error
- *   look").
+ *   text.disabled, no opacity. Invalid: the danger border, as every
+ *   field's error.
  * - The number shortcut is drawn as ShortcutHint's key (Kbd 'xs', 12px), at the row's end.
  * - No text of its own: shadcn's "Previous", "Next", "Skip", "Submit", the progress text
  *   ("Question 1 of 5") and the error's default ("Choose an answer to continue.") come from the
@@ -66,7 +66,7 @@ export function QuestionnaireTitle({
       className={cn(
         // Floated, the legend is an ordinary item of the question's column (a fieldset draws its
         // first legend apart, outside the gap): its description follows under its last line, never
-        // over it, however many lines a long question takes (P5.93 item 32).
+        // over it, however many lines a long question takes.
         'float-start m-0 w-full p-0 text-lg font-semibold break-words text-primary',
         TEXT_DIRECTION,
         className,

@@ -19,7 +19,7 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          'Asks before an action: the Dialog look without a close button; cancel gets the focus. ConfirmDialog and IrreversibleConfirmDialog (P2.4).',
+          'Asks before an action: the Dialog look without a close button; cancel gets the focus. ConfirmDialog and IrreversibleConfirmDialog.',
         ),
       },
     },

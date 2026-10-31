@@ -5,14 +5,14 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * SidePanels (P4.5, the owner's decision, docs/decisions.md "Document page"): the panels beside a
+ * SidePanels: the panels beside a
  * document — history, attachments, comments, related documents, delivery status, presence
  * (Business Central's FactBoxes) — each collapsible with one click.
  * - Each panel: the raised surface, border.default, radius lg; its header is one button across
  *   the panel: the name (sm semibold), the count after it (xs text.secondary, tabular), a 14px
  *   ChevronDown at the end that turns when the panel is closed; padding md. Closed, only the
  *   header row stays. 16px between panels.
- * - One spacing rule for every panel (P4.9, the owner's review; P5.93 item 6: the same gap as
+ * - One spacing rule for every panel (the same gap as
  *   every SectionCard and collapsible FormSection): the header (padding md), an md (16px) gap,
  *   the body padded md at the sides and the bottom. The body's content adds no space of its own
  *   at its outer edges: the first and last rows of a KeyValueList, RelatedDocuments or
@@ -73,7 +73,7 @@ function Panel({
           className={cn(
             BUTTON_RESET,
             // 16px under the header, open or closed: the same gap from a section's header to its
-            // first row as every SectionCard and collapsible FormSection (P5.93 item 6).
+            // first row as every SectionCard and collapsible FormSection.
             'box-border flex w-full cursor-pointer items-center gap-2 p-4 text-start text-primary hover:bg-surface-hover',
             FOCUS_RING,
             '-outline-offset-2',

@@ -1,5 +1,5 @@
 /*
- * The logic of PeriodicRunPage (BUILD-PLAN P5.21), tested on its own: counting the checks by
+ * The logic of PeriodicRunPage, tested on its own: counting the checks by
  * result. The results themselves are the application's.
  */
 

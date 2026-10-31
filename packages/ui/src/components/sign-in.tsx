@@ -9,7 +9,7 @@ import { FieldMessage } from './field'
 import { TextField } from './text-field'
 
 /*
- * Sign-in building blocks (BUILD-PLAN P5.6, the owner's addition of 2026-10-08): the flows live in
+ * Sign-in building blocks: the flows live in
  * the Core; these are the pieces inside AuthShell (which matches shadcn's login-03).
  * - EmailFirstForm: shadcn's login-05 shape — the e-mail field, a full-width Continue, then the
  *   "or" divider and the providers' buttons (or the providers first), and under them optional
@@ -17,8 +17,8 @@ import { TextField } from './text-field'
  *   next step (password, a code, the company's identity provider).
  * - ProviderSignInButtons: "Continue with Microsoft" / "Continue with Google". The providers and
  *   their labels come from the application; Microsoft's and Google's official marks are drawn by
- *   the Design System (`provider-marks.tsx`, the owner: beside this component, not in
- *   @veljaos/tokens; D18 is about Liro's own logo), another provider's mark comes in as a file.
+ *   the Design System (`provider-marks.tsx`, beside this component, not in
+ *   @veljaos/tokens, which holds Liro's own logo), another provider's mark comes in as a file.
  *   Neutral default buttons — never the provider's colour as a fill; the mark keeps its
  *   own colours, 18px, 12px before the label (Microsoft's spacing), full width, 8px apart.
  * - Loading: the pressed button keeps its size and name, its content hidden behind the loader
@@ -139,7 +139,7 @@ export interface EmailFirstFormProps {
   /**
    * Signing in with this form is not possible now, and why, from the application ("Signing in is
    * paused for maintenance until 22:00."): the address is read-only, Continue and the providers
-   * are unavailable, and the reason stands under Continue (P5.93).
+   * are unavailable, and the reason stands under Continue.
    */
   unavailableReason?: ReactNode
   /** Sign-in providers (ProviderSignInButtons), with the "or" divider between. */

@@ -4,13 +4,13 @@ import { cn } from '../primitives/cn'
 import { ChartPhoneContext } from './frame'
 
 /*
- * ChartSeriesToggle (P4.7a; P5.93 item 42, shadcn/ui's "Bar Chart - Interactive"): the key
+ * ChartSeriesToggle (shadcn/ui's "Bar Chart - Interactive"): the key
  * figures of a chart as toggle buttons, passed as the chart's `toggle` so they stand at the end of
  * its header band, full height, a line between each (on phones under the title, side by side
  * across the width). Each is the series' name (xs, text.secondary) and its figure (xl semibold on
  * a desktop, lg on a phone, tabular; the application's, never added here). The chosen one is the
  * neutral selection (surface.selected with a 2px border.selected line along its bottom edge, the
- * header's rule, D17), never blue: it chooses what the chart shows, it is not a tab. One at a time
+ * header's rule), never blue: it chooses what the chart shows, it is not a tab. One at a time
  * by default; `multiple` lets several be shown.
  */
 

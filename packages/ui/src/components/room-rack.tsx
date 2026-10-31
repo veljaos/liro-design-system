@@ -32,7 +32,7 @@ import { usePhone } from './use-phone'
 import { HintedTarget } from './popover'
 
 /*
- * RoomRack (BUILD-PLAN P5.25): the rooms of a place at a glance — the front desk's "room rack" of
+ * RoomRack: the rooms of a place at a glance — the front desk's "room rack" of
  * a hotel, the beds of a ward, the cabins of a ship. Floors (or sections) one under another, each
  * room a tile; every fact comes from the application: the number, a short type, the occupancy
  * state and the housekeeping state (the application's states, each with its words, tone and
@@ -41,7 +41,7 @@ import { HintedTarget } from './popover'
  *   tone), the housekeeping state its icon and words in the tone's colour.
  * - Filters: a search (number or name) and one chip per state with its count — the application's
  *   `count`, else the rooms given counted. One occupancy and one housekeeping state at a time;
- *   pressing the pressed chip clears it. Chips use the neutral selection (D17). The filtering is
+ *   pressing the pressed chip clears it. Chips use the neutral selection. The filtering is
  *   local; `filter` / `onFilterChange` make it controlled.
  * - Keyboard: one tile in the tab order (roving); the arrows move in reading order — the rack is
  *   a list of rooms, not a map of the building, so it follows the page's direction
@@ -62,7 +62,7 @@ export interface RackState {
   id: string
   /** The state in words ("Occupied", "Dirty"). */
   label: string
-  /** A status tone (Appendix A.2); default neutral. */
+  /** A status tone; default neutral. */
   tone?: Tone
   /** An icon beside the words; default by the tone. */
   icon?: IconComponent
@@ -165,7 +165,7 @@ const TILE_TONE: Record<Tone, string> = {
   premium: 'bg-status-premium-bg text-status-premium-fg border-status-premium-border',
 }
 
-/** The neutral selection: surface.selected with a 3px border.selected bar at the start (D17). */
+/** The neutral selection: surface.selected with a 3px border.selected bar at the start. */
 const SELECTED =
   "bg-surface-selected before:absolute before:inset-y-0 before:start-0 before:border-0 before:border-s-[3px] before:border-solid before:border-selected before:content-['']"
 
@@ -283,7 +283,7 @@ export function RoomRack(props: RoomRackProps) {
               {note.label}
             </span>
           ) : (
-            // P5.93: a note is a state line like housekeeping (icon and words in its tone),
+            // A note is a state line like housekeeping (icon and words in its tone),
             // wrapping inside the tile's padding — never a badge wider than the tile.
             <span
               key={index}

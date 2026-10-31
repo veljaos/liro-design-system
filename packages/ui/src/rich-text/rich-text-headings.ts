@@ -6,7 +6,7 @@ import {
 } from './rich-text-logic'
 
 /*
- * The headings of a rich text value with stable ids (P5.30 e): RichText's `headingIds` gives its
+ * The headings of a rich text value with stable ids: RichText's `headingIds` gives its
  * h2 and h3 these ids, and a long reading page lists the same headings in its contents
  * (PageContents). Both read the value through `normalizeRichText`, so they always agree. Pure: no
  * DOM, no Tiptap.

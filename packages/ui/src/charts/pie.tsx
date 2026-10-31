@@ -23,7 +23,7 @@ import {
 } from './shared'
 
 /*
- * PieChart and DonutChart (P4.6's donut, rebuilt on the shadcn/ui Chart primitive in P4.7a): parts
+ * PieChart and DonutChart, on the shadcn/ui Chart primitive: parts
  * of one whole, five or fewer — otherwise a bar chart (the "Choosing a chart" page).
  * - Never colour alone: direct labels (outside, or inside on a small raised tag so the text never
  *   stands on the data colour) or a legend; a legend replaces the labels when they are off.
@@ -75,7 +75,7 @@ export interface PieChartProps extends ChartStateProps {
   ringLabel?: string
   height?: number
   controls?: ReactNode
-  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end. */
   toggle?: ReactNode
   layout?: 'desktop' | 'phone'
   className?: string
@@ -222,7 +222,7 @@ export function PieChart(props: PieChartProps) {
         fill={(sector.payload as { fill?: string } | undefined)?.fill ?? 'currentColor'}
         stroke="var(--liro-surface-raised)"
         strokeWidth={2}
-        // P5.93: round joins, so the separators meet evenly at the centre.
+        // Round joins, so the separators meet evenly at the centre.
         strokeLinejoin="round"
       />
     )

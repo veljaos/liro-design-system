@@ -1,5 +1,5 @@
 /*
- * Group BC's example data (P5.62, My profile): Milica Petrović's own profile on 14.10.2026 at
+ * The example data (My profile): Milica Petrović's own profile on 14.10.2026 at
  * 09:40 — her language and theme, two-factor sign-in with an authenticator app (on since
  * 02.03.2026; the turn-on flow starts from "off"), her passkeys and the devices signed in to her
  * account. Every choice, code, key and sentence is the Core's: the otpauth text and its key, the
@@ -36,7 +36,7 @@ export const ME = {
 
 /**
  * The interface languages the Core offers, each in its own name; a name in another language than
- * the page carries it (`lang`, D15).
+ * the page carries it (`lang`).
  */
 export const LANGUAGES: SelectOption[] = [
   { value: 'en', label: 'English' },

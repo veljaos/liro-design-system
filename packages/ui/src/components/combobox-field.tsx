@@ -41,7 +41,7 @@ export interface ComboboxOption extends Choice {
   /** Shown, but cannot be chosen. */
   disabled?: boolean
   /**
-   * The label's language when it differs from the page's (D15): a language written in its own name
+   * The label's language when it differs from the page's: a language written in its own name
    * ("Srpski (latinica)" in an English page) carries `lang="sr-Latn"`, in the list and once chosen.
    */
   lang?: string
@@ -57,7 +57,7 @@ interface ListProps {
   loading: boolean
   showEmpty: boolean
   /**
-   * An option's group heading (SelectField's searchable list, P5.28): consecutive options of one
+   * An option's group heading (SelectField's searchable list): consecutive options of one
    * group stand under its heading, in a listbox group. Default: no groups.
    */
   groupOf?: (option: ComboboxOption) => string | undefined
@@ -86,7 +86,7 @@ export function optionId(listId: string, index: number): string {
 export function ComboboxList(props: ListProps) {
   const { messages } = useLiro()
   const { listId, active } = props
-  // The active option stays in view as the keys move through a long list (P5.28): the focus
+  // The active option stays in view as the keys move through a long list: the focus
   // stays in the input, so the browser does not scroll to it.
   // Only the list scrolls, never the page around it.
   useEffect(() => {
@@ -217,7 +217,7 @@ export function ComboboxPopover({
   anchor: ReactNode
   onOptionHover: (index: number) => void
   onOptionClick: (index: number) => void
-  /** Extra classes for the floating box (LookupField: a minimum width, P5.19). */
+  /** Extra classes for the floating box (LookupField: a minimum width). */
   className?: string
   children: ReactNode
 }) {
@@ -387,7 +387,7 @@ export function ComboboxField(props: ComboboxFieldProps) {
                     search(text)
                   }}
                   onKeyDown={onKeyDown}
-                  // A press shows the list (P5.28): the options known so far, or the search's.
+                  // A press shows the list: the options known so far, or the search's.
                   onClick={() => {
                     setOpen(true)
                   }}

@@ -9,15 +9,14 @@ import { cn } from '../primitives/cn'
 import { PageHeader, type PageBack } from './page-header'
 
 /*
- * DetailPage and RecordFormPage (BUILD-PLAN P4.4; the owner's values, docs/decisions.md "Detail
- * and record form pages"; view and edit mode from P4.9, "Records: one page, read and edited").
+ * DetailPage and RecordFormPage (a record has one page, read and edited in place).
  * - The header: the back button, the title (h1, visible: it names the record), the status, a
  *   subtitle line, the actions at the end; then the key figures (KeyFigures), 16px under it.
  * - DetailPage: the sections stacked as SectionCards (the system's record group, as the forms'
  *   FormSection), 16px apart; values as plain text (KeyValueList), never disabled inputs; an
  *   optional SectionBar, sticky under the shell, for long pages. A record has no tabs and no side
- *   column (P4.9): history and files are sections too.
- * - Edit mode (SAP Fiori, P4.9): one mode for the whole record. The application's one "Edit"
+ *   column: history and files are sections too.
+ * - Edit mode (SAP Fiori): one mode for the whole record. The application's one "Edit"
  *   header action sets `mode` 'edit'; the same sections then show their `edit` content (fields)
  *   in the same order, and a section with `editable: false` keeps its read-only content; the
  *   header actions and section actions go away, and a bar sticky at the bottom (FormBottomBar:
@@ -66,7 +65,7 @@ interface PageFrame {
   subtitle?: ReactNode
   /** Two to four key figures under the title. */
   keyFigures?: readonly KeyFigure[]
-  /** The side column: panels from the application. Not on a record (P4.9). */
+  /** The side column: panels from the application. Not on a record. */
   side?: ReactNode
   /** 'desktop' or 'phone' forces one; default by the viewport (48em). */
   layout?: 'desktop' | 'phone'
@@ -100,7 +99,7 @@ export interface RecordFormPageProps extends PageFrame {
 
 /**
  * The content and the side column: side by side from 75em, the side under the content below — and
- * always under it in the phone layout, whatever the viewport (P4.8: a phone frame inside a wide
+ * always under it in the phone layout, whatever the viewport (a phone frame inside a wide
  * window drew both columns in 390px).
  */
 function Columns({
@@ -253,8 +252,8 @@ export function DetailPage(props: DetailPageProps) {
 }
 
 /**
- * One new record to create on a full page (more than about ten fields or attachments, AGENTS.md
- * D14): back, title, the form with its actions at the top and the bottom bar, and the
+ * One new record to create on a full page (more than about ten fields or attachments):
+ * back, title, the form with its actions at the top and the bottom bar, and the
  * unsaved-changes guard. An existing record is edited on its DetailPage (`mode` 'edit').
  */
 export function RecordFormPage(props: RecordFormPageProps) {

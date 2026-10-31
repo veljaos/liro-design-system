@@ -75,20 +75,20 @@ export const SHADCN: Record<string, string> = {
 }
 
 export function tokensCss(): string {
-  const values: string[] = ['/* A.1 Colour ramps (0 = lightest, 9 = darkest) and common colours */']
+  const values: string[] = ['/* Colour ramps (0 = lightest, 9 = darkest) and common colours */']
   for (const [ramp, steps] of Object.entries(RAMPS)) {
     steps.forEach((value, step) => values.push(`--liro-${ramp}-${String(step)}: ${value};`))
   }
   for (const [name, value] of Object.entries(COMMON)) {
     values.push(`--liro-${kebab(name)}: ${value};`)
   }
-  values.push('', '/* A.3 Spacing and radius */')
+  values.push('', '/* Spacing and radius */')
   for (const [name, value] of Object.entries(SPACE)) values.push(`--liro-space-${name}: ${value};`)
   for (const [name, value] of Object.entries(RADIUS))
     values.push(`--liro-radius-${name}: ${value};`)
   values.push(
     '',
-    '/* A.4 Motion, breakpoints (for reference: media queries cannot read variables), sizes, layers */',
+    '/* Motion, breakpoints (for reference: media queries cannot read variables), sizes, layers */',
   )
   for (const [name, value] of Object.entries(DURATION))
     values.push(`--liro-duration-${name}: ${value};`)
@@ -98,7 +98,7 @@ export function tokensCss(): string {
   for (const [name, value] of Object.entries(SIZES))
     values.push(`--liro-size-${kebab(name)}: ${value};`)
   for (const [name, value] of Object.entries(LAYERS)) values.push(`--liro-layer-${name}: ${value};`)
-  values.push('', '/* A.5 Typography */')
+  values.push('', '/* Typography */')
   values.push(`--liro-font-sans: ${sansStack(FONT_CJK_ORDER.default)};`)
   values.push(`--liro-font-brand: ${BRAND_STACK};`)
   values.push(`--liro-font-mono: ${MONO_STACK};`)
@@ -123,11 +123,11 @@ export function tokensCss(): string {
 
   const themed = (theme: Theme) => {
     const index = theme === 'light' ? 0 : 1
-    const lines = [`color-scheme: ${theme};`, '', '/* A.2 Meanings */']
+    const lines = [`color-scheme: ${theme};`, '', '/* Meanings */']
     for (const { variable, pair } of meaningEntries()) {
       lines.push(`${variable}: ${cssValue(pair[index])};`)
     }
-    lines.push('', '/* A.3 Shadows */')
+    lines.push('', '/* Shadows */')
     for (const [size, pair] of Object.entries(SHADOWS)) {
       lines.push(`--liro-shadow-${size}: ${pair[index]};`)
     }
@@ -167,7 +167,7 @@ export function tokensCss(): string {
   return [
     HEADER,
     '/*',
-    ' * Liro tokens as CSS variables (BUILD-PLAN Appendix A). Values are declared once on :root;',
+    ' * Liro tokens as CSS variables. Values are declared once on :root;',
     ' * meanings per theme. LiroProvider sets data-liro-theme; without it, the light theme applies.',
     ' * Any element may carry data-liro-theme, so both themes can appear on one page.',
     ' */',
@@ -185,7 +185,7 @@ export function tokensCss(): string {
     '',
     block("[data-liro-theme='dark']", themed('dark')),
     '',
-    '/* P4.3 On a selected row or card, the dark-theme text colours that pass over the selection:',
+    '/* On a selected row or card, the dark-theme text colours that pass over the selection:',
     '   marked with data-liro-surface="selected", or painted with the bg-surface-selected utility',
     '   (P5 part 2: a row painted without the mark kept the shades that fail over it). */',
     block(
@@ -199,7 +199,7 @@ export function tokensCss(): string {
     '   resolves in its own theme. */',
     block(':root,\n[data-liro-theme]', shadcn),
     '',
-    '/* A.5 and P1.2 Base typography, in the lowest layer: any utility or application style wins. */',
+    '/* Base typography, in the lowest layer: any utility or application style wins. */',
     block('@layer base', base.join('\n').split('\n')),
     '',
   ].join('\n')
@@ -237,7 +237,7 @@ export function fontsCss(stylesheets: string[]): { css: string; files: string[] 
   return {
     css: [
       HEADER,
-      '/* Font faces of the Liro interface and brand faces (BUILD-PLAN P1.2), from Fontsource.',
+      '/* Font faces of the Liro interface and brand faces, from Fontsource.',
       '   Licences: THIRD-PARTY-NOTICES.md (SIL Open Font License 1.1). */',
       faces.trim(),
       '',
@@ -265,34 +265,31 @@ export function themeCss(): string {
     '--leading-*: initial;',
     '--tracking-*: initial;',
     '',
-    '/* A.4 Breakpoints (literal: media queries cannot read variables) */',
+    '/* Breakpoints (literal: media queries cannot read variables) */',
     ...Object.entries(BREAKPOINTS).map(([name, value]) => `--breakpoint-${name}: ${value};`),
   ]
 
-  const lines: string[] = ['/* A.2 Surfaces: bg-surface-page, bg-surface-raised, … */']
+  const lines: string[] = ['/* Surfaces: bg-surface-page, bg-surface-raised, … */']
   for (const name of Object.keys(MEANINGS.surface)) {
     lines.push(`--background-color-surface-${kebab(name)}: var(--liro-surface-${kebab(name)});`)
   }
-  lines.push('', '/* A.2 Text: text-primary, text-secondary, text-brand, text-link, … */')
+  lines.push('', '/* Text: text-primary, text-secondary, text-brand, text-link, … */')
   for (const name of Object.keys(MEANINGS.text)) {
     lines.push(`--text-color-${kebab(name)}: var(--liro-text-${kebab(name)});`)
   }
-  lines.push(
-    '',
-    '/* A.2 Borders: border-default, border-strong, divide-subtle, … and focus rings */',
-  )
+  lines.push('', '/* Borders: border-default, border-strong, divide-subtle, … and focus rings */')
   for (const name of Object.keys(MEANINGS.border)) {
     lines.push(`--border-color-${kebab(name)}: var(--liro-border-${kebab(name)});`)
   }
   lines.push('--outline-color-focus: var(--liro-border-focus);')
   // The control boundary also fills the parts that mark a control, such as the off track of a
-  // switch (P2.1): bg-control.
+  // switch: bg-control.
   lines.push('--background-color-control: var(--liro-border-control);')
-  // The border of an invalid field takes the danger text colour (P2.2, owner's decision):
+  // The border of an invalid field takes the danger text colour:
   // border-status-danger-fg. status.danger.border is too light for a control boundary.
   lines.push('--border-color-status-danger-fg: var(--liro-status-danger-fg);')
   lines.push('--ring-color-focus: var(--liro-border-focus);')
-  lines.push('', '/* A.2 Brand: backgrounds, the text on them, and the accent */')
+  lines.push('', '/* Brand: backgrounds, the text on them, and the accent */')
   for (const name of ['solid', 'solidHover', 'solidActive', 'subtle', 'subtleHover']) {
     lines.push(`--background-color-brand-${kebab(name)}: var(--liro-brand-${kebab(name)});`)
   }
@@ -300,8 +297,8 @@ export function themeCss(): string {
   lines.push('--color-brand-accent: var(--liro-brand-accent);')
   lines.push(
     '',
-    '/* A.2 Status tones: text-status-danger-fg on bg-status-danger-bg, border-status-danger-border;',
-    '   bg-/fill-/stroke-status-danger-solid for bars and dots, never for text (Appendix B.6). */',
+    '/* Status tones: text-status-danger-fg on bg-status-danger-bg, border-status-danger-border;',
+    '   bg-/fill-/stroke-status-danger-solid for bars and dots, never for text. */',
   )
   for (const tone of Object.keys(TONES)) {
     const base = `--liro-status-${tone}`
@@ -314,7 +311,7 @@ export function themeCss(): string {
   }
   lines.push(
     '',
-    '/* A.6 Families, for buttons: bg-family-destructive-solid (hover, active), text-on-accent on it;',
+    '/* Families, for buttons: bg-family-destructive-solid (hover, active), text-on-accent on it;',
     '   bg-family-destructive-subtle (hover) with text-family-destructive-fg. */',
   )
   for (const [family, parts] of Object.entries(FAMILIES)) {
@@ -329,30 +326,27 @@ export function themeCss(): string {
     lines.push(`--text-color-family-${family}-fg: var(${base}-fg);`)
     lines.push(`--text-color-family-${family}-fg-hover: var(${base}-fg-hover);`)
   }
-  lines.push('', '/* A.3 Radius (rounded-none and rounded-full are built in) and shadows */')
+  lines.push('', '/* Radius (rounded-none and rounded-full are built in) and shadows */')
   for (const name of ['xs', 'sm', 'md', 'lg', 'xl']) {
     lines.push(`--radius-${name}: var(--liro-radius-${name});`)
   }
   for (const name of Object.keys(SHADOWS)) {
     lines.push(`--shadow-${name}: var(--liro-shadow-${name});`)
   }
-  lines.push(
-    '',
-    '/* A.4 Motion: ease-standard, …; the default transition uses base and standard */',
-  )
+  lines.push('', '/* Motion: ease-standard, …; the default transition uses base and standard */')
   for (const name of Object.keys(EASING)) {
     lines.push(`--ease-${name}: var(--liro-ease-${name});`)
   }
   lines.push('--default-transition-duration: var(--liro-duration-base);')
   lines.push('--default-transition-timing-function: var(--liro-ease-standard);')
-  lines.push('', '/* A.4 Sizes: h-header, h-control, h-control-sm, max-w-content */')
+  lines.push('', '/* Sizes: h-header, h-control, h-control-sm, max-w-content */')
   lines.push('--spacing-header: var(--liro-size-header-height);')
   lines.push('--spacing-control: var(--liro-size-control-height);')
   lines.push('--spacing-control-sm: var(--liro-size-control-height-sm);')
   lines.push('--container-content: var(--liro-size-content-max-width);')
   lines.push(
     '',
-    '/* A.5 Typography: font-sans, font-brand, font-mono; text-xs … text-xl with the body line',
+    '/* Typography: font-sans, font-brand, font-mono; text-xs … text-xl with the body line',
     '   height and letter spacing of the script; text-h1 … text-h6; font-regular … font-bold;',
     '   leading-tight|base|relaxed; tracking-heading|body|caps. Tabular digits: tabular-nums. */',
   )

@@ -8,9 +8,9 @@ import type { IconComponent } from './intents'
 import { Skeleton } from './progress'
 
 /*
- * CategoryGrid (BUILD-PLAN P5.30 e): the categories of a collection to browse — a help centre's
+ * CategoryGrid: the categories of a collection to browse — a help centre's
  * topics, a catalogue's groups, a library's shelves — as cards with how many things each holds.
- * The look is the Launchpad's card (P4.2), without its keys and editing: a page of topics is
+ * The look is the Launchpad's card, without its keys and editing: a page of topics is
  * not the application's home.
  * - A list named by the application (`label`) of cards: one column on phones, otherwise as many
  *   15rem-wide columns as fit (the grid follows its own width), 16px apart.
@@ -36,7 +36,7 @@ export interface CategoryCard {
   count?: string
   /** Its lucide icon. */
   icon?: IconComponent
-  /** The language tag of the texts when it differs from the page's (D15). */
+  /** The language tag of the texts when it differs from the page's. */
   lang?: string
 }
 

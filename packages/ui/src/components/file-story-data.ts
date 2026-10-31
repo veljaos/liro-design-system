@@ -1,4 +1,3 @@
-import type { Attachment } from './attachment-list'
 import type { FileEntry } from './file-browser-logic'
 import type { NameConflict } from './name-conflict-dialog'
 import type { ShareAccess, ShareCandidate, ShareLevel } from './share-dialog'
@@ -6,7 +5,7 @@ import type { TreeNode } from './tree-logic'
 import type { FileVersion } from './version-list'
 
 /*
- * The files and folders stories' data (P5.43): Northwind Building Ltd.'s documents — contracts,
+ * The files and folders stories' data: Northwind Building Ltd.'s documents — contracts,
  * staff files, the Harbour Road site's documentation — fictitious throughout. The thumbnails are
  * drawn here as grey SVG pictures (`photoUri`), the application's pictures of its photos. Not part
  * of the package. No classes here.
@@ -204,43 +203,6 @@ export const RESULTS: FileEntry[] = [
     sizeUnit: 'KB',
     location: 'Contracts / 2026',
   },
-]
-
-/** Trash: where each item was, and when it was deleted (the application's column). */
-export const TRASH: (FileEntry & { deleted: string })[] = [
-  {
-    id: 'trash-1',
-    name: 'Old site plan.pdf',
-    kind: 'file',
-    owner: 'Grace Lin',
-    size: '2.1',
-    sizeUnit: 'MB',
-    location: 'Site documentation / Harbour Road site / Drawings',
-    deleted: '2026-10-13T16:40:00+02:00',
-  },
-  {
-    id: 'trash-2',
-    name: 'Draft offers',
-    kind: 'folder',
-    itemCount: 4,
-    owner: 'Anna Clarke',
-    location: 'Contracts / 2026',
-    deleted: '2026-10-08T09:12:00+02:00',
-  },
-]
-
-/** An upload under way: each of P5.5's states. */
-export const UPLOADS: Attachment[] = [
-  {
-    id: 'up-1',
-    name: 'IMG_20261014_901.jpg',
-    sizeText: '3,4 MB',
-    state: 'uploading',
-    progress: 45,
-  },
-  { id: 'up-2', name: 'IMG_20261014_902.jpg', sizeText: '3,1 MB', state: 'scanning' },
-  { id: 'up-3', name: 'Daily log 14 Oct.pdf', sizeText: '220 KB', state: 'available' },
-  { id: 'up-4', name: 'setup.exe', sizeText: '1,2 MB', state: 'quarantined' },
 ]
 
 /** The handover protocol's current version. */

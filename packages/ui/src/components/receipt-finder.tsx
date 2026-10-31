@@ -12,20 +12,20 @@ import { ScanField, type ScanFeedback } from './scan-field'
 import { TextField } from './text-field'
 
 /*
- * ReceiptFinder (P5.28 item 21d). Finding an issued receipt again — the original of a refund, the
+ * ReceiptFinder. Finding an issued receipt again — the original of a refund, the
  * receipt to copy or to cancel: **scan its code** (the QR printed on it; a scanner or the
  * camera), or **search** by its number, its date and its total. The application searches and
  * answers with the receipts found; the finder shows them and reports the one chosen. It
- * computes and matches nothing (D1, D4).
+ * computes and matches nothing.
  * - The ScanField first (the fastest way: the receipt is in the customer's hand), then ONE search
- *   field, "Receipt number, date or total" (P5.93 item 14, the owner's fourth review: not three
+ *   field, "Receipt number, date or total" (not three
  *   fields and a Search button). The text is reported as typed (`onSearch`, after 300ms of
  *   quiet, at once on Enter); the application reads it — a number, a day, an amount — and
  *   answers with the receipts found.
  * - The results as rows (CandidateList's look): the number (semibold, left to right), the date
  *   and time, the kind in the application's words, a detail ("2 lines refunded already"), the
  *   total at the end. A row is a button; the chosen one is the neutral selection with the 3px
- *   border.selected bar (D17). A receipt that cannot be chosen (refunded in full) stays focusable
+ *   border.selected bar. A receipt that cannot be chosen (refunded in full) stays focusable
  *   with its reason.
  * - Before a search nothing is listed; while searching, three skeleton rows; none found: the
  *   compact no-results EmptyState; the application's error in a danger Alert.

@@ -40,7 +40,7 @@ describe('Alert and Banner', () => {
     expect(html).toContain('The period is closed.')
   })
 
-  it('are compact with only a title, and an empty message adds nothing (P5.23)', () => {
+  it('are compact with only a title, and an empty message adds nothing', () => {
     const titleOnly = render(<Alert tone="success" title="5 checks passed" />)
     const emptyMessage = render(
       <Alert tone="success" title="5 checks passed">

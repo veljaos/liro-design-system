@@ -20,7 +20,7 @@ const meta = {
           '`format.number`). The row is one button: its name and tooltip list everyone ("Also ' +
           'here: Dragan Ilić, Liro agent (agent)"); pressing it lists the people with the ' +
           "application's line (Viewing, Editing). **When:** the header of a record or document " +
-          'that several people work on. **When not:** the people of a record (owner, approvers): ' +
+          'that several people work on. **When not:** the people of a record (approvers): ' +
           'PersonName; an activity log: HistoryList.\n\n' +
           '**AgentMark — what for:** one marker after every name that belongs to an agent (a ' +
           'machine actor): the Bot icon, neutral (never blue: an agent is not an action), the ' +

@@ -10,8 +10,7 @@ import { Skeleton } from './progress'
 import { usePhone } from './use-phone'
 
 /*
- * ArticleList (BUILD-PLAN P5.39; restyled in P5.93 item 27, the owner: "like shadcn Card"):
- * articles to read — a blog's posts, a magazine's stories, a newsroom's notes — as cards. Generic:
+ * ArticleList: articles to read — a blog's posts, a magazine's stories, a newsroom's notes — as cards. Generic:
  * every word and figure is the application's; the date goes through the provider's `format`.
  * - A card is shadcn's Card (radius lg, border.default, surface.raised, the xs shadow): the
  *   optional image on top, edge to edge (16:9 on surface.sunken; the application's image or
@@ -27,7 +26,7 @@ import { usePhone } from './use-phone'
  * - Loading: skeleton cards. None: the application's `empty`, or EmptyState's no-results. Error:
  *   ErrorState with the application's Try again.
  * - `headingLevel` (default 2) keeps the page's outline; `lang` marks an article in another
- *   language (D15).
+ *   language.
  */
 
 /** One article in a list. */
@@ -132,7 +131,7 @@ function Card({
           <Link
             href={article.href}
             className={cn(
-              // A title is never underlined (P5.94 item 10): the card shows hover by its surface, the
+              // A title is never underlined: the card shows hover by its surface, the
               // keyboard's focus by the ring round it.
               'text-primary no-underline outline-none visited:text-primary',
               'after:absolute after:inset-0 after:content-[""]',

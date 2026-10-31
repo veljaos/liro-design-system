@@ -14,12 +14,12 @@ describe('contrast is measured', () => {
     assert.equal(contrastRatio(toRgb('#0078D4', BLACK), WHITE).toFixed(2), '4.53')
   })
 
-  it('composites a translucent colour over the surface under it (Appendix B.6)', () => {
+  it('composites a translucent colour over the surface under it', () => {
     assert.deepEqual(toRgb('rgba(0,0,0,0.5)', WHITE), [128, 128, 128])
     assert.deepEqual(toRgb('rgba(255,255,255,0.05)', [27, 27, 27]), [38, 38, 38])
   })
 
-  it('finds a pair below 4.5:1: white on orange 6 and gray 6 (why A.6 fills them with 7)', () => {
+  it('finds a pair below 4.5:1: white on orange 6 and gray 6 (why the families fill them with 7)', () => {
     assert.ok(contrastRatio(WHITE, toRgb(RAMPS.orange[6], BLACK)) < 4.5)
     assert.ok(contrastRatio(WHITE, toRgb(RAMPS.gray[6], BLACK)) < 4.5)
   })

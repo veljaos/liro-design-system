@@ -94,7 +94,7 @@ import {
 } from './diagram-parts'
 
 /*
- * Diagram (BUILD-PLAN P5.26; docs/decisions.md "Diagrams"): a process of steps and connections
+ * Diagram: a process of steps and connections
  * — a workflow, an approval, an orchestrator's job — on React Flow (@xyflow/react, MIT) with
  * dagre (MIT) for the automatic layout, in a BPMN-style notation drawn with tokens. One
  * component in three modes:
@@ -114,7 +114,7 @@ import {
  * list") is the diagram's text alternative everywhere.
  * Every drag has another way (WCAG 2.5.7): the palette by click, a connection by "Connect to…",
  * a move by the arrow keys. Layout from the leading edge: start-to-end is mirrored in
- * right-to-left pages; labels are HTML in the page's direction with their own text order (D15).
+ * right-to-left pages; labels are HTML in the page's direction with their own text order.
  */
 
 type FlowNode = StepNode | LaneNode
@@ -179,7 +179,7 @@ function sameSize(was: DiagramSize | undefined, size: DiagramSize): boolean {
   return was?.width === size.width && was.height === size.height
 }
 
-/** Bumps when the page's fonts finish loading; null until they are ready (P4.6, as the charts). */
+/** Bumps when the page's fonts finish loading; null until they are ready (as the charts). */
 function useFontGeneration(): number | null {
   const [generation, setGeneration] = useState<number | null>(() =>
     typeof document === 'undefined' || !('fonts' in document) || document.fonts.status === 'loaded'
@@ -855,7 +855,7 @@ function DiagramBody(props: DiagramProps) {
   let body
   if (props.loading === true) {
     body = (
-      // A visible loading state (P5.93 item 2): the canvas's place, and the words over it.
+      // A visible loading state: the canvas's place, and the words over it.
       <div
         role="status"
         aria-label={messages['diagram.loading']}
@@ -1067,7 +1067,7 @@ function DiagramBody(props: DiagramProps) {
               minZoom={0.2}
               maxZoom={2}
               connectionLineType={ConnectionLineType.SmoothStep}
-              // No credit link on the canvas (P5.93): React Flow is MIT and the link is only a
+              // No credit link on the canvas: React Flow is MIT and the link is only a
               // request; the credit stays in THIRD-PARTY-NOTICES.md.
               proOptions={{ hideAttribution: true }}
               ariaLabelConfig={{

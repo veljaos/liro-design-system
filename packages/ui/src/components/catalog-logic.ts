@@ -1,5 +1,5 @@
 /*
- * The logic of the catalogue components (P5.19): LookupDialog's keyboard, ImportWizard's column
+ * The logic of the catalogue components: LookupDialog's keyboard, ImportWizard's column
  * mapping and preview, BulkEditDrawer's summary. Pure functions, unit-tested in
  * `catalog-logic.test.ts`. Nothing here sorts, filters or decides about records: the application
  * does that on the server.

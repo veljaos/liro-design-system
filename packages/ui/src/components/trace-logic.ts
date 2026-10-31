@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import type { IconComponent } from './intents'
 
 /*
- * The data and pure rules of the assistant's work display (P5.93, the owner's item 49): one Trace
+ * The data and pure rules of the assistant's work display: one Trace
  * row and the patterns built on it — Reasoning, Chain of thought, Plan, Queue, Task, Subagent and
  * Sources. Nothing here calls a model: every step, word and figure is the application's. Tested in
  * trace-logic.test.ts.

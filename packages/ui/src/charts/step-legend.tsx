@@ -3,8 +3,8 @@ import { useLiro } from '../provider/liro-provider'
 import { stepCount, stepRanges, stepShade, type StepRamp } from './steps'
 
 /*
- * The legend and the "No data" hatching of values in steps (P5.41's RegionChart; Heatmap, P5.93
- * item 44): each step's swatch — its shade laid on the card — with its range written through
+ * The legend and the "No data" hatching of values in steps (RegionChart,
+ * Heatmap): each step's swatch — its shade laid on the card — with its range written through
  * `format` in the provider's words ("Under 10", "10 to under 50", "50 and more"), or the
  * application's own words; then "No data" with the hatch, when a value is missing.
  */

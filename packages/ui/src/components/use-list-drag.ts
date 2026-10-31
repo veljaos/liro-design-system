@@ -8,13 +8,12 @@ import {
 } from './list-drag-logic'
 
 /*
- * Dragging an item between lists, on the dragging rule (decisions.md "Launchpad dragging is
- * live"): pointer events, never the browser's drag and drop; a mouse or pen drag starts after
- * 4px, a touch after a 250ms press without moving more than 8px (a swipe still scrolls, and once
- * a touch drag has started the page does not scroll under it). The lists are the container's
- * elements marked `data-drop-zone="<id>"`, their items `data-drop-item="<id>"`; both are measured
+ * Dragging an item between lists, on the dragging rule: pointer events, never the browser's drag
+ * and drop; a mouse or pen drag starts after 4px, a touch after a 250ms press without moving more
+ * than 8px (a swipe still scrolls, and once a touch drag has started the page does not scroll under
+ * it). The lists are the container's elements marked `data-drop-zone="<id>"`, their items `data-drop-item="<id>"`; both are measured
  * when the drag starts. The component draws the lifted item (`dx`, `dy`), the list it would land
- * in and the line at `line` pixels from that list's top — neutral, never blue (D17). Releasing
+ * in and the line at `line` pixels from that list's top — neutral, never blue. Releasing
  * reports the place (`onDrop`) when it changes anything; Escape or a cancelled pointer puts it
  * back. Dragging is a shortcut: every component that uses it has a menu (and so a keyboard) way.
  */
@@ -180,7 +179,7 @@ export function useListDrag(options: ListDragOptions): {
 /** The lifted item's look while it is dragged (shadow lg, border.strong, the raised layer). */
 export const LIFTED = 'relative z-(--liro-layer-raised) cursor-grabbing border-strong shadow-lg'
 
-/** The list it would land in: the neutral selection (D17), never blue. */
+/** The list it would land in: the neutral selection, never blue. */
 export const DROP_ZONE_ACTIVE = 'bg-surface-selected'
 
 /** The landing line inside the list (position it with `top`): 2px border.strong, neutral. */

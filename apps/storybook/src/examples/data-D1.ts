@@ -1,5 +1,5 @@
 /*
- * The data of group D1's example screen (Phase 5, P5.18 and P5.19): Kvadrat Gradnja d.o.o.'s
+ * The data of the invoice draft example: Kvadrat Gradnja d.o.o.'s
  * catalogue (items with stock, services, fixed assets, and generated articles so it holds tens of
  * thousands of records) and the draft invoice to Bojović i sinovi d.o.o. whose lines are added by
  * search. Every amount is a decimal string computed here in whole paras (BigInt), never by hand:
@@ -423,7 +423,7 @@ function recordLine(value: string, quantity: string): DraftLine {
 }
 
 /**
- * The draft as Milica left it (P5.90 item 4, simple by default): plain lines only — the cement
+ * The draft as Milica left it (simple by default): plain lines only — the cement
  * and the armature (more than the 36 pc in stock), a fixed asset sold with the materials, three
  * services at S 20% and S 10% — and an empty line at the end, where the walk-through searches.
  * No line has a discount, so the grid shows no discount column; section headings, text lines,

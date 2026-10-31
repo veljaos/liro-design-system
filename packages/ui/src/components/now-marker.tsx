@@ -5,7 +5,7 @@ import { cn } from '../primitives/cn'
  * "Now" on the time grids, from the application's clock (`now` props), never the device's, so a
  * picture never changes with the time.
  *
- * **Calendar-type views write only the time (P5.94 item 16, the owner):** CalendarView's day and
+ * **Calendar-type views write only the time:** CalendarView's day and
  * week, the ResourceSchedule (desktop and phone) and the Timetable show "now" as one small dark tag
  * with the time ("10:20 AM", "10:20", through `format.time`) in their time gutter, their hours row
  * or under the running period's times — NowTimeTag / NowTime: surface.inverse with
@@ -15,10 +15,10 @@ import { cn } from '../primitives/cn'
  * current slot `aria-current="time"`. A scale label under the tag is left out of sight
  * (`tagCovers`).
  *
- * **The Gantt keeps its line (owner, P5.94 item 6):** a long plan reads "done before today, to do
+ * **The Gantt keeps its line:** a long plan reads "done before today, to do
  * after" across many rows. NowMarker draws it: a 2px line in border.selected with an 8px dot of the
- * same colour at its top. Neutral, never blue (D17) and never a status colour. It never covers text
- * (P5.90 item 17): the Gantt draws it under its bars and their labels.
+ * same colour at its top. Neutral, never blue and never a status colour. It never covers text:
+ * the Gantt draws it under its bars and their labels.
  *
  * Not part of the package's API: the grids place these (absolutely, inside a positioned box) and
  * name them.
@@ -90,8 +90,8 @@ export interface NowTimeTagProps {
 }
 
 /**
- * The time of "now" in a grid's time gutter or scale (P5.93 item 8; the calendars' only mark of
- * "now", P5.94 item 16). With `label` an image named by it, otherwise decoration.
+ * The time of "now" in a grid's time gutter or scale (the calendars' only mark of
+ * "now"). With `label` an image named by it, otherwise decoration.
  */
 export function NowTimeTag({ orientation, style, time, label, className }: NowTimeTagProps) {
   const horizontal = orientation === 'horizontal'
@@ -115,7 +115,7 @@ export function NowTimeTag({ orientation, style, time, label, className }: NowTi
 }
 
 /**
- * The time of "now" on its tag, in the flow (P5.93 item 8): the Timetable writes it under the
+ * The time of "now" on its tag, in the flow: the Timetable writes it under the
  * running period's times, where it covers no text. With `label` an image named by it.
  */
 export function NowTime({

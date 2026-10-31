@@ -5,7 +5,7 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * QuizResult (P5.12): the outcome of a quiz taken with the general Questionnaire (P5.1). The
+ * QuizResult: the outcome of a quiz taken with the general Questionnaire. The
  * application grades the answers and decides whether the quiz is passed; this shows it.
  * - The outcome first, in words and a tone (never colour alone): "Passed" with CircleCheck in
  *   status.success, or "Not passed" with CircleX in status.danger.

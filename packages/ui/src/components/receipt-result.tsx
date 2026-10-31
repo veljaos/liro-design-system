@@ -9,10 +9,10 @@ import { Spinner } from './spinner'
 import { TextField } from './text-field'
 
 /*
- * ReceiptResult (P5.28 item 21g). What came back when a receipt was issued, and how it reaches
- * the customer. Every fact and word is the application's (D1, D2): the processor's number and
+ * ReceiptResult. What came back when a receipt was issued, and how it reaches
+ * the customer. Every fact and word is the application's: the processor's number and
  * time, the counter, the receipt's code (a QR image) and its link; whether it is waiting to be
- * sent (offline, item 21h).
+ * sent (offline).
  * - The outcome on top: a success check with "Receipt issued" (`title`), or, with
  *   `tone="waiting"`, a neutral CloudUpload with the application's words ("Issued offline, waiting
  *   to be sent") — never blue; then the application's `text`.

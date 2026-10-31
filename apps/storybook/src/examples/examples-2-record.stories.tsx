@@ -88,7 +88,7 @@ async function typeCode(root: HTMLElement, code: string) {
 }
 
 /**
- * P5.62: Milica Petrović's own profile (SettingsPage, opened from the user menu's "Profile"):
+ * Milica Petrović's own profile (SettingsPage, opened from the user menu's "Profile"):
  * Preferences — her name and e-mail as the administrator set them, the interface language (each
  * language in its own name, `lang` on the option) and the theme, saved at once.
  */

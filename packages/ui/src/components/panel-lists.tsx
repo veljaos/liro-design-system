@@ -4,7 +4,7 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * The lists of the side panels (P4.9, the owner's review; docs/decisions.md "Side panels"), so
+ * The lists of the side panels, so
  * every panel reads the same way. Rows 8px above and below, a 1px border.subtle line between
  * rows (as KeyValueList's rows); inside SidePanels the outer rows lose their outer padding, so
  * the panel's own spacing rule holds.
@@ -106,7 +106,7 @@ export function ActivityList({ items, label, limit = 2, className }: ActivityLis
               <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
                 {item.author}
               </span>
-              {/* A time keeps its own order in a right-to-left page (D15). */}
+              {/* A time keeps its own order in a right-to-left page. */}
               <span className={cn('text-xs text-tertiary tabular-nums', TEXT_ISOLATE)}>
                 {item.time}
               </span>

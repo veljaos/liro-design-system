@@ -39,7 +39,7 @@ const DONE_ACTIONS = (
 
 const dialog = () => within(document.body).getByRole('dialog', { name: 'Payment' })
 
-/** P5.93: everything fits at once — the dialog never scrolls (the tests run at 1280 × 720). */
+/** Everything fits at once — the dialog never scrolls (the tests run at 1280 × 720). */
 async function expectNoScroll() {
   const content = document.querySelector<HTMLElement>('[data-slot="payment-dialog"]')
   await expect(content).not.toBeNull()
@@ -59,7 +59,7 @@ const meta = {
           'reason, approved) or split (the parts paid and the next one). **It never subtracts:** ' +
           'the change due, the remaining amount and whether it can be completed come from the ' +
           'application as decimal strings and words.\n\n' +
-          '**P5.93:** the dialog never scrolls — at a tablet and on a phone the amount due, the ' +
+          '**It never scrolls:** at a tablet and on a phone the amount due, the ' +
           'ways to pay, the quick amounts, the amount tendered, the keypad and the main action ' +
           'fit at once (two columns on a wide screen, 48px keys on a phone). Cash and Card are ' +
           'the two big choices; every other way stands behind one “Other…”. Done: the change due ' +
@@ -67,13 +67,13 @@ const meta = {
           '**When:** after “Charge” in CartPanel.\n\n' +
           '**When not:** an invoice’s payment in the books (a form); a refund (the application’s ' +
           'own flow with a confirmation).\n\n' +
-          '**The application’s own ways to pay (P5.28):** `methods` may hold `PaymentOption`s — ' +
+          '**The application’s own ways to pay:** `methods` may hold `PaymentOption`s — ' +
           'cash, card, cheque, wire transfer or deferred payment, voucher, instant payment (a code ' +
           'the customer scans), other cashless; more than four wrap as a grid of pressed buttons. ' +
           'With `onAddPart` several ways pay one sale: the parts paid and the remaining amount ' +
           'stand on top. A way that needs something first (the buyer) shows the reason and the ' +
           'application’s `extra` field.\n\n' +
-          '**P5.94: a sale paid in parts, any ways in any order.** The parts paid are a list — ' +
+          '**A sale paid in parts, any ways in any order.** The parts paid are a list — ' +
           'the way, the amount, its state (“Paid”, “Approved”) — and the remaining amount always ' +
           'stands beside the amount due. A card takes one part at a time: the amount, “Pay … by ' +
           'card”, the terminal, then approved (the application adds the part) or declined (the ' +
@@ -173,7 +173,7 @@ export const CardApproved: Story = {
 }
 
 /**
- * Split (P5.94): 500,00 approved by card, 511,00 remaining; the next card part is the keypad's
+ * Split: 500,00 approved by card, 511,00 remaining; the next card part is the keypad's
  * amount and "Pay 511,00 RSD by card". "Complete payment" waits: still to pay.
  */
 export const Split: Story = {
@@ -700,7 +700,7 @@ function SplitTill({ onCancel }: { onCancel?: () => void }) {
 }
 
 /**
- * A sale paid in parts (P5.94): 500,00 by card — the amount, "Pay 500,00 RSD by card", approved —
+ * A sale paid in parts: 500,00 by card — the amount, "Pay 500,00 RSD by card", approved —
  * then the rest in cash; "Complete payment" works once nothing remains.
  */
 export const SplitAnyWays: Story = {
@@ -768,7 +768,7 @@ export const CancelAfterApproval: Story = {
   },
 }
 
-/** A way chosen under "Other…" on a phone: its whole name, never broken inside a word (P5.94). */
+/** A way chosen under "Other…" on a phone: its whole name, never broken inside a word. */
 export const VoucherPhone: Story = {
   name: 'Voucher, phone width',
   render: (args) => (

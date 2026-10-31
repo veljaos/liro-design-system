@@ -1,5 +1,5 @@
 /*
- * The illustrative acts of the legal page's stories (P5.27). Invented: the gazette is the
+ * The illustrative acts of the legal page's stories. Invented: the gazette is the
  * "Illustrative Gazette", the acts, articles, courts and numbers are made up for the examples and
  * copy no real text. Not part of the package: nothing in src/index.ts imports this file. No
  * classes here (Storybook compiles classes only from *.stories.tsx files).
@@ -25,12 +25,6 @@ export const NO_LONGER: LegalStatus = {
   label: 'No longer in force',
   tone: 'neutral',
 }
-
-export const GAZETTE_NAME = 'Illustrative Gazette'
-
-/** The note every story with an act shows: the act is invented. */
-export const ILLUSTRATIVE_NOTE =
-  'Illustrative: an invented act, gazette and numbers, written for the design system’s examples.'
 
 const ACT = '#legal/acts/building-works'
 

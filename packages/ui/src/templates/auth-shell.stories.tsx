@@ -8,7 +8,7 @@ import { settle } from '../primitives/story-helpers'
 import { AuthShell, type AuthShellProps } from './auth-shell'
 import { BRAND } from './shell-story-data'
 
-/** The footer an application might pass: links in text.tertiary in every state (owner). */
+/** The footer an application might pass: links in text.tertiary in every state. */
 function Footer({ items }: { items: readonly string[] }) {
   return (
     <>
@@ -25,7 +25,7 @@ function Footer({ items }: { items: readonly string[] }) {
   )
 }
 
-/** The first screen of an e-mail-first sign-in (its flow is the Core's, P5.6). */
+/** The first screen of an e-mail-first sign-in (its flow is the Core's). */
 function EmailStep({
   label,
   button,
@@ -64,7 +64,7 @@ const meta = {
           'recovery: the text lockup centred above one 420px card, the footer (language, terms) ' +
           'under it.\n\n' +
           '**How:** `title` and `description` head the card; `children` is the step of the flow, ' +
-          'built in the Core from the sign-in building blocks (P5.6); `footer` holds the ' +
+          'built in the Core from the sign-in building blocks; `footer` holds the ' +
           "application's links. On phones the card is the page, without a border.\n\n" +
           '**When not:** inside the application (AppShell); a page that cannot be used ' +
           '(StatusPage).',

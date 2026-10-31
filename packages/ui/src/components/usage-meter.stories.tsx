@@ -18,7 +18,7 @@ const meta = {
           'and as a bar named by what is counted. The amounts are decimal strings written ' +
           'through `format`; the bar is only a picture of them. Whether an amount is near or ' +
           'over its limit is the application’s `state`, in words and tone: the meter never turns ' +
-          'a figure into a state (D30). A note and the application’s action may follow.\n\n' +
+          'a figure into a state. A note and the application’s action may follow.\n\n' +
           '**When to use:** an allowance with a limit (or none) that the user manages: seats, ' +
           'storage, quotas. **When not:** the progress of a job or an upload (ProgressBar, ' +
           'JobProgress); a dashboard number without a limit (StatCard); a monitored thing’s ' +

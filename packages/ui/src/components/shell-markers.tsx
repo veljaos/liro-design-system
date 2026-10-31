@@ -20,8 +20,7 @@ export { CONNECTION_STATUSES, minutesLeft, untilNextMinute } from './shell-marke
 export type { ConnectionStatus } from './shell-markers-logic'
 
 /*
- * Connection, environment and session markers (BUILD-PLAN P5.3; docs/decisions.md "Shell
- * markers"). The shell's slots (AppShell `impersonationBar`, `environmentMarker`,
+ * Connection, environment and session markers. The shell's slots (AppShell `impersonationBar`, `environmentMarker`,
  * `offlineIndicator`) take them; ConnectionState stands beside a draft's actions.
  *
  * - The two bars are strips across the screen, aligned with the header's content: 8px by 24px
@@ -30,7 +29,7 @@ export type { ConnectionStatus } from './shell-markers-logic'
  *   part of the shell and must cost as little height as possible while they stay.
  * - ImpersonationBar: the warning tone (status.warning bg, its fg for the icon and the lead),
  *   never dismissible, above the header and sticky with it. Whose account (lead, semibold), the
- *   mode, the reason, the application's note (P5.29: that the session is audited) and the minutes
+ *   mode, the reason, the application's note (that the session is audited) and the minutes
  *   left, then "Exit" at the end.
  * - OfflineIndicator: the neutral tone (status.neutral bg with its border, as the neutral
  *   Banner), under the header, while offline only; what is waiting is the application's text.
@@ -83,7 +82,7 @@ export interface ImpersonationBarProps {
   reason?: string
   /**
    * What else the person must know about the session, from the application, after the reason
-   * (P5.29: "Every page you open is recorded in the audit log" for a team member's audited view
+   * ("Every page you open is recorded in the audit log" for a team member's audited view
    * of a tenant).
    */
   note?: string
@@ -247,7 +246,7 @@ export function OfflineIndicator(props: OfflineIndicatorProps) {
   )
 }
 
-/** The tones an environment can take: never blue (D17). */
+/** The tones an environment can take: never blue. */
 export type EnvironmentTone = Exclude<Tone, 'info'>
 
 export interface EnvironmentMarkerProps {

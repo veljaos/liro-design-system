@@ -190,7 +190,7 @@ export const DefaultInteraction: Story = {
 }
 
 /**
- * Two fields ticked. A field the user may not change in bulk is not offered at all (P5.93: the
+ * Two fields ticked. A field the user may not change in bulk is not offered at all (the
  * drawer shows only what can be set).
  */
 export const SeveralFields: Story = {

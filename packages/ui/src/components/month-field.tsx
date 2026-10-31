@@ -17,8 +17,8 @@ import { controlAttributes, Field, fieldProps, type FieldBaseProps } from './fie
 import { Tooltip } from './popover'
 
 /*
- * MonthField (BUILD-PLAN P2.3), the previous Design System's AccountingPeriodSelect: one month,
- * chosen in a month grid (owner's decision, 2026-09-28). Mantine 9.6.2 MonthPickerInput and
+ * MonthField: one month,
+ * chosen in a month grid. Mantine 9.6.2 MonthPickerInput and
  * @mantine/dates styles: the trigger is a button drawn as an input (PickerInputBase), the value
  * written as month and year; the dropdown opens under it at its start and shows a year header
  * with previous and next buttons (CalendarHeader, 36px controls) over twelve months in four rows
@@ -26,7 +26,7 @@ import { Tooltip } from './popover'
  * 13px, radius md, surface.hover on hover, brand.solid when chosen, 0.5px around each.
  *
  * Keyboard: the arrows move between months — left and right by one, measured from the leading
- * edge (Appendix B.7), up and down by a row of three — and change the year at either end; Enter
+ * edge, up and down by a row of three — and change the year at either end; Enter
  * or Space chooses. The focus goes to the chosen month (else the current one) when it opens and
  * back to the trigger when it closes.
  */
@@ -160,7 +160,7 @@ export function MonthField(props: MonthFieldProps) {
                   aria-describedby={control.describedBy}
                   className={cn(
                     INPUT,
-                    // The month's name and year in their own order, at the page's start (P3.6).
+                    // The month's name and year in their own order, at the page's start.
                     'cursor-pointer hover:bg-surface-hover',
                     TEXT_DIRECTION,
                     // The month's name is capitalised; the placeholder is shown as given.

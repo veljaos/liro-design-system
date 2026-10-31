@@ -18,7 +18,7 @@ interface Sample {
   italic?: boolean
 }
 
-/** One sentence per script class (BUILD-PLAN section 2): "Every screen in every module looks and behaves the same." */
+/** One sentence per script class: "Every screen in every module looks and behaves the same." */
 const SCRIPTS: Sample[] = [
   {
     script: 'Latin',
@@ -215,7 +215,7 @@ function TypeScale() {
   return (
     <Page
       title="Type scale"
-      intro="Appendix A.5. Sizes text-xs … text-xl (text-md is the body), weights font-regular … font-bold, headings text-h1 … text-h6 (all semibold), line heights leading-tight|base|relaxed, letter spacing tracking-heading|body|caps. Faces: font-sans (interface), font-brand (wordmark, status pages), font-mono. Amounts use tabular digits (tabular-nums)."
+      intro="Sizes text-xs … text-xl (text-md is the body), weights font-regular … font-bold, headings text-h1 … text-h6 (all semibold), line heights leading-tight|base|relaxed, letter spacing tracking-heading|body|caps. Faces: font-sans (interface), font-brand (wordmark, status pages), font-mono. Amounts use tabular digits (tabular-nums)."
     >
       <List title="Headings">
         {Object.entries(HEADINGS).map(([level, [size, lineHeight]]) => (
@@ -302,7 +302,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'The type of Appendix A.5 and the fonts of seven script classes, shipped with ' +
+          'The type scale and the fonts of seven script classes, shipped with ' +
           '@veljaos/tokens (fonts.css, imported by tokens.css). Use the text-*, font-*, leading-* ' +
           'and tracking-* utilities; never set a font family or size by hand. Mark text whose ' +
           'language differs from the page with lang, through useLangAttribute.',

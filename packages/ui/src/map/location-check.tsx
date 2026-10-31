@@ -17,7 +17,7 @@ import {
 } from './map-logic'
 
 /*
- * LocationCheck (BUILD-PLAN P5.41): is the person at the workplace? Made for a phone first. The
+ * LocationCheck: is the person at the workplace? Made for a phone first. The
  * workplace's allowed area (a circle of metres or a polygon, from the application) and the
  * person's reported position with its accuracy circle, on a map; the state in words and a tone —
  * inside, outside, unknown, denied — always as the application decides it (it measures with

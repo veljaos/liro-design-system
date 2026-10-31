@@ -178,7 +178,7 @@ describe('RegisterPage', () => {
     expect(html).toContain('Locked')
   })
 
-  it('links both corrections to the other entry, the same way (P5.23)', () => {
+  it('links both corrections to the other entry, the same way', () => {
     const rows: Injury[] = [
       { id: '14', no: '14', name: 'Marko Đorđević', correctedBy: '27' },
       { id: '27', no: '27', name: 'Marko Đorđević', corrects: '14' },
@@ -366,7 +366,7 @@ describe('StatutoryFormPage', () => {
   })
 })
 
-// P5.45 ledger: a column without figures (a financial statement's "Note") shows the content.
+// Ledger: a column without figures (a financial statement's "Note") shows the content.
 describe('StatutoryFormPage content cells', () => {
   it('shows the application content in place of an amount, on desktop and on phones', () => {
     const sections: StatutorySection[] = [

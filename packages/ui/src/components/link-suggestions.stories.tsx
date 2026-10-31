@@ -76,7 +76,7 @@ export const FirstSearch: Story = {
   args: { loading: true, suggestions: [] },
 }
 
-/** Nothing found (P5.93): the box says what it is for; "No suggestions" is announced. */
+/** Nothing found: the box says what it is for; "No suggestions" is announced. */
 export const Empty: Story = {
   args: { suggestions: [] },
   play: async ({ canvasElement }) => {

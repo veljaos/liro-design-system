@@ -12,8 +12,8 @@ import { CompactIconButton } from './button'
 import { usePhone } from './use-phone'
 
 /*
- * AssistantPanel (BUILD-PLAN P5.34): an assistant beside every page — a sheet at the end of the
- * screen (440px, full height; on a phone the whole screen, D19), opened from the application's
+ * AssistantPanel: an assistant beside every page — a sheet at the end of the
+ * screen (440px, full height; on a phone the whole screen), opened from the application's
  * button in AppShell's `agent` slot (`trigger`). The user asks in plain words; the panel shows
  * the conversation and keeps the question box at its bottom.
  * - **Header**: the application's title (the assistant's name), "New conversation" (a 28px pencil,
@@ -141,7 +141,7 @@ function Conversation(props: AssistantPanelProps) {
   const count = props.turns.length
   // On opening and on each new turn: the last question at the top of the view, and kept there
   // until the reader scrolls — a font that arrives or a turn above that grows moves the question
-  // after the first placing (P5.31). An answer growing below it moves nothing.
+  // after the first placing. An answer growing below it moves nothing.
   useLayoutEffect(() => {
     const element = body.current
     if (element === null) return
