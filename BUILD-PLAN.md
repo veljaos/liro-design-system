@@ -398,7 +398,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.96 | The owner's review of P5.94–P5.95 | P5.95 | done | 2026-10-30 | Questions and answers as a page of their own in every portal; a map names an area only while it is pointed at; "All" first in every worklist's state chips; the Launchpad's story named "Home" |
 | P5.96a | The owner's review of P5.96: map marks from real input only | P5.96 | done | 2026-10-30 | After a drill-down by mouse or touch no area is outlined, named or showing its tooltip until the pointer really moves; leaving the map clears every mark; the focus ring and the keys' area only when the focus came from the keyboard; tested with real mouse, touch and keys |
 | P5.96b | The owner's review of P5.96a: one hover look everywhere | P5.96a | done | 2026-10-30 | Every map area hovered or reached by the keys looks the same — its outline drawn over its neighbours and its tooltip, never a name on the area; every area of every level checked; focus rings that Tailwind 4's `outline-none` hid drawn again, and rings and frames no neighbour covers |
-| P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
+| P6.1 | Full language and direction matrix | Phases 1–5 | done | 2026-10-31 | Every story already runs in light/dark × ltr/rtl; every component with text has its Arabic and Japanese stories, now enforced (`scripts/sample-text-stories.mjs`); 505 stories (the first two of every component and every example screen) run in sr-Cyrl-RS, sr-Latn-RS, ar and ja: no component defect |
 | P6.3 | Performance budget | P4.8 | todo | | |
 | P6.6 | Full cleanup | P6.3 | todo | | |
 | P6.5 | Release 1.0.0 | all | todo | | |
