@@ -33,8 +33,7 @@ import { WizardFooter } from './wizard-footer'
  *   never wrapping, and is named "<label> — has errors"; `focusFirstInvalid` selects the first
  *   such tab and focuses the first invalid field. FormTabs is the form's card:
  *   the tab list is its first row, start-aligned, its line across the card's width, and the
- *   FormSections in a panel are drawn flat inside it (no card of their own). Page-level Tabs keep
- *   their own rule (centred).
+ *   FormSections in a panel are drawn flat inside it (no card of their own).
  * - FormActions: the actions at the top and a bar at the bottom,
  *   sticky, shown only while the top actions are out of view ('auto': an
  *   IntersectionObserver, so both sets are never visible at once), or 'always' / 'never'; the bar

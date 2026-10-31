@@ -28,7 +28,7 @@ import { usePhone } from './use-phone'
  *   drawn disabled but still focusable (`aria-disabled`), with the reason as its description and
  *   in a tooltip; it cannot be changed.
  * - Read-only (a built-in role, `readOnly`): no checkboxes — a check for allowed and a dash for
- *   not allowed, both named (read-only is plain text, never disabled controls).
+ *   not allowed, both named.
  * - Keyboard: the WAI-ARIA grid — one cell in the tab order; the arrows move one cell (the arrow
  *   pointing forward in the reading direction to the next column), Home and End to the row's
  *   ends, Ctrl+Home and Ctrl+End to the matrix's corners; Space changes the checkbox.

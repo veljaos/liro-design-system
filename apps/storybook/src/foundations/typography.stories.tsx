@@ -215,7 +215,7 @@ function TypeScale() {
   return (
     <Page
       title="Type scale"
-      intro="Appendix A.5. Sizes text-xs … text-xl (text-md is the body), weights font-regular … font-bold, headings text-h1 … text-h6 (all semibold), line heights leading-tight|base|relaxed, letter spacing tracking-heading|body|caps. Faces: font-sans (interface), font-brand (wordmark, status pages), font-mono. Amounts use tabular digits (tabular-nums)."
+      intro="Sizes text-xs … text-xl (text-md is the body), weights font-regular … font-bold, headings text-h1 … text-h6 (all semibold), line heights leading-tight|base|relaxed, letter spacing tracking-heading|body|caps. Faces: font-sans (interface), font-brand (wordmark, status pages), font-mono. Amounts use tabular digits (tabular-nums)."
     >
       <List title="Headings">
         {Object.entries(HEADINGS).map(([level, [size, lineHeight]]) => (
