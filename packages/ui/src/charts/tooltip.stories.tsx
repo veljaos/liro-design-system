@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
-import { ExampleProvider } from '../components/story-frames'
+import { ExampleProvider, StoryProvider } from '../components/story-frames'
 import { settle } from '../primitives/story-helpers'
 import { BarChart, type BarChartProps } from './cartesian'
 import { COSTS, REVENUE } from './chart-story-data'
@@ -110,4 +110,62 @@ export const WithTotal: Story = {
       '4.740.222,60',
     )
   },
+}
+
+/** Arabic: the tooltip's names and the total keep their own order in a right-to-left page. */
+export const Arabic: Story = {
+  render: () => (
+    <StoryProvider locale="ar">
+      <ExampleProvider>
+        <div className="max-w-140 pb-24">
+          <BarChart
+            {...COSTS_RSD}
+            title="التكاليف"
+            series={[
+              { key: 'goods', label: 'البضائع' },
+              { key: 'salaries', label: 'الرواتب' },
+              { key: 'transport', label: 'النقل' },
+            ]}
+            categories={[
+              { key: '2026-08', label: 'أغسطس' },
+              { key: '2026-09', label: 'سبتمبر' },
+            ]}
+            tooltip={{
+              total: {
+                label: 'المجموع',
+                values: { '2026-08': '3854444.35', '2026-09': '4740222.60' },
+              },
+              defaultCategory: '2026-09',
+            }}
+          />
+        </div>
+      </ExampleProvider>
+    </StoryProvider>
+  ),
+}
+
+/** Japanese names in the tooltip. */
+export const Japanese: Story = {
+  render: () => (
+    <StoryProvider locale="ja">
+      <ExampleProvider>
+        <div className="max-w-140 pb-24">
+          <BarChart
+            {...COSTS_RSD}
+            title="費用"
+            series={[
+              { key: 'goods', label: '商品' },
+              { key: 'salaries', label: '給与' },
+              { key: 'transport', label: '輸送' },
+            ]}
+            categories={[
+              { key: '2026-08', label: '8月' },
+              { key: '2026-09', label: '9月' },
+            ]}
+            tooltip={{ defaultCategory: '2026-09' }}
+          />
+        </div>
+      </ExampleProvider>
+    </StoryProvider>
+  ),
 }
