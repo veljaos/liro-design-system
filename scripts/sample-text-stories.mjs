@@ -22,6 +22,7 @@ const CHECKED = /^(Components|Templates|Charts)\//
  */
 export function sampleStories(text) {
   const title = /title:\s*['"]([^'"]+)['"]/.exec(text)?.[1] ?? null
+  /** @param {string} word */
   const named = (word) =>
     new RegExp(`export const \\w*${word}\\w*\\s*[:=]|name:\\s*['"][^'"]*${word}`).test(text)
   return { title, arabic: named('Arabic'), japanese: named('Japanese') }
