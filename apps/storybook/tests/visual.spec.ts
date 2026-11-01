@@ -1,13 +1,13 @@
-// Changing this file is a protected change (BUILD-PLAN rule 10).
+// Changing this file is a protected change (see AGENTS.md).
 import { expect, test } from '@playwright/test'
 import { MODES, isPictured, modeName, openEntry, readEntries } from './support'
 
 // Visual: every story matches its baseline in light/dark × ltr/rtl. Baselines are generated
-// only in the pinned Playwright image (BUILD-PLAN P0.4). Docs pages are prose and are not compared.
+// only in the pinned Playwright image. Docs pages are prose and are not compared.
 // A story whose play function or rendering failed fails here, before any screenshot is taken or
-// compared, so a picture of a failed interaction can never become a baseline (P3.0).
+// compared, so a picture of a failed interaction can never become a baseline.
 // A story tagged "interaction" gets no picture: a pictured story renders its state directly, with
-// no clicks, typing, focus or scrolling, so every run draws the same thing (P5.23).
+// no clicks, typing, focus or scrolling, so every run draws the same thing.
 for (const entry of readEntries().filter(isPictured)) {
   for (const mode of MODES) {
     test(`${entry.title} / ${entry.name} [${modeName(mode)}]`, async ({ page }) => {

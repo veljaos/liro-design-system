@@ -1,6 +1,6 @@
-# Changing this file is a protected change (BUILD-PLAN rule 10).
+# Changing this file is a protected change (see AGENTS.md).
 #
-# BUILD-PLAN rule 10: a pull request that changes a protected file must contain a section
+# A pull request that changes a protected file must contain a section
 # "## Protected file changes" with a reason per file. Runs again when the description is edited.
 name: Protected files
 

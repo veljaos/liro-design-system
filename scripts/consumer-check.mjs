@@ -1,5 +1,5 @@
 // Installs the packed @veljaos/* packages into a copy of apps/consumer-check outside the
-// repository, then builds and checks it like a real consumer (BUILD-PLAN P0.2, Appendix B.10).
+// repository, then builds and checks it like a real consumer.
 // Workspace links hide a missing `files` entry or a private package; tarballs do not.
 // Run `pnpm build` first.
 import { execFileSync } from 'node:child_process'

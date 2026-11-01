@@ -1,10 +1,10 @@
-// Changing the accessibility settings in this file is a protected change (BUILD-PLAN rule 10).
+// Changing the accessibility settings in this file is a protected change (see AGENTS.md).
 import { LiroProvider, NUMBER_SCHEMES, type LiroFormat } from '@veljaos/ui'
 import type { Decorator, Preview } from '@storybook/react-vite'
 import { WCAG_TAGS } from './a11y'
 import './preview.css'
 
-const LOCALES = ['en', 'sr-Latn-RS', 'ar', 'ja'] as const
+const LOCALES = ['en', 'sr-Latn-RS', 'sr-Cyrl-RS', 'ar', 'ja'] as const
 const MONEY_DECIMALS = ['0', '2', '4', '6'] as const
 
 /**

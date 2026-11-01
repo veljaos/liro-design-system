@@ -1,6 +1,6 @@
-// Changing this file is a protected change (BUILD-PLAN rule 10).
+// Changing this file is a protected change (see AGENTS.md).
 //
-// The protected-files check of BUILD-PLAN rule 10: a pull request that changes a protected file
+// The protected-files check: a pull request that changes a protected file
 // must contain a section "## Protected file changes" that names every such file with a reason.
 // CI runs it on every pull request event, including edits of the description.
 import { execFileSync } from 'node:child_process'
@@ -8,9 +8,9 @@ import { appendFileSync, readFileSync } from 'node:fs'
 import { matchesGlob } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-/** Rule 10's file classes, as globs over repository paths. */
+/** The protected file classes, as globs over repository paths. */
 export const PROTECTED = [
-  // Agent permissions (added by the owner, 2026-09-24).
+  // Agent permissions.
   '.claude/settings.json',
   // Lint configuration.
   'eslint.config.*',
@@ -23,6 +23,7 @@ export const PROTECTED = [
   '.github/**',
   'scripts/protected-files.mjs',
   'scripts/static-stories.mjs',
+  'scripts/sample-text-stories.mjs',
   'scripts/consumer-check.mjs',
   'apps/consumer-check/check.mjs',
   // Playwright and Storybook test configuration, and the accessibility settings.
@@ -112,7 +113,7 @@ function main() {
 
   if (result.missing.length > 0) {
     console.error(
-      `\nThis pull request changes protected files (BUILD-PLAN rule 10). Add a section\n` +
+      `\nThis pull request changes protected files. Add a section\n` +
         `"${HEADING}" to its description that names each file above with a reason.`,
     )
     process.exitCode = 1

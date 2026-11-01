@@ -1,4 +1,4 @@
-// Changing this file is a protected change (BUILD-PLAN rule 10).
+// Changing this file is a protected change (see AGENTS.md).
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import { WCAG_TAGS } from '../.storybook/a11y'

@@ -1,8 +1,8 @@
-// Changing this file is a protected change (BUILD-PLAN rule 10).
+// Changing this file is a protected change (see AGENTS.md).
 import { expect, test } from '@playwright/test'
 import { openEntry, type Mode } from './support'
 
-// SettlingValue (BUILD-PLAN P2.8, "Done when"): while the user types and the value is recomputed
+// SettlingValue: while the user types and the value is recomputed
 // slowly, the value never moves (no layout shift), and each settle is announced exactly once.
 
 declare global {
@@ -27,8 +27,7 @@ for (const mode of MODES) {
   test(`SettlingValue: no layout shift, one announcement per settle [${mode.direction}]`, async ({
     page,
   }) => {
-    // The page's clock is the test's (P5, the owner: deterministic, no race against the story's
-    // delay). Installed before the story loads, it runs normally until it is paused below; then
+    // The page's clock is the test's (deterministic, no race against the story's delay). Installed before the story loads, it runs normally until it is paused below; then
     // time moves only when the test moves it, on every machine alike.
     await page.clock.install()
     const outcome = await openEntry(page, STORY, mode)

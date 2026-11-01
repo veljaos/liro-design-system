@@ -1,4 +1,4 @@
-// Changing this file is a protected change (BUILD-PLAN rule 10).
+// Changing this file is a protected change (see AGENTS.md).
 import { defineConfig, devices } from '@playwright/test'
 
 const PORT = 6006
@@ -6,7 +6,7 @@ const PORT = 6006
 /**
  * Story tests, accessibility and visual checks against the built Storybook (storybook-static).
  * CI runs them inside the official Playwright image, pinned by digest; visual baselines are
- * generated only there (BUILD-PLAN P0.4).
+ * generated only there.
  */
 export default defineConfig({
   testDir: './tests',
@@ -17,7 +17,7 @@ export default defineConfig({
   retries: 0,
   // A run that takes too long is stopped by Playwright itself, which also stops the server below.
   // A CI step timeout killed Playwright but left the server running, so the next step found the
-  // port taken (docs/decisions.md, CI, P0.4a).
+  // port taken.
   globalTimeout: 25 * 60_000,
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
   expect: {
