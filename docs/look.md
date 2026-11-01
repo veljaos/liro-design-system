@@ -39,7 +39,8 @@
 - Fonts, sizes and weights only from the type utilities (`font-sans`, `text-md`, `text-h2`,
   `font-semibold`). Body text is 14px.
 - Noto Sans covers Latin, Cyrillic, Greek, Arabic, Hebrew and CJK (by `lang`); Space Grotesk is the
-  brand face, JetBrains Mono the code face. All ship with `@veljaos/tokens`.
+  brand face, JetBrains Mono the code face. All ship with `@veljaos/tokens`; `tokens.css` loads
+  every face except Chinese and Japanese, which are `@veljaos/tokens/fonts-cjk.css`.
 - Amounts and figures use `tabular-nums`.
 - Titles are never underlined: a heading or a card whose title is its link shows hover on its
   surface (`LINK_ITEM_HOVER`); a link inside running text underlines on hover.

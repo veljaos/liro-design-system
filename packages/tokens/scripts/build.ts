@@ -1,12 +1,19 @@
 // Builds @veljaos/tokens from src/tokens.ts. Node runs this TypeScript file directly (type stripping).
-// Outputs: dist/tokens.css, dist/fonts.css, dist/fonts/*.woff2 and
+// Outputs: dist/tokens.css, dist/fonts.css, dist/fonts-cjk.css, dist/fonts/*.woff2 and
 // dist/fonts/LICENSE-*.txt,
 // dist/theme.css, dist/tokens.json. dist/LICENSE and dist/THIRD-PARTY-NOTICES.md come from
 // scripts/copy-legal.mjs, which runs next.
 import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { contrastChecks, contrastFailures } from '../src/contrast.ts'
-import { FONT_PACKAGES, fontsCss, themeCss, tokensCss, tokensJson } from '../src/generate.ts'
+import {
+  FONT_PACKAGES,
+  fontsCss,
+  themeCss,
+  tokensCss,
+  tokensJson,
+  type FontFile,
+} from '../src/generate.ts'
 
 // Contrast is measured, never assumed: the build fails below the minimum.
 const failures = contrastFailures()
@@ -24,10 +31,10 @@ const dist = fileURLToPath(new URL('dist/', root))
 await rm(dist, { recursive: true, force: true })
 await mkdir(`${dist}fonts`, { recursive: true })
 
-// Font faces: the packages' stylesheets, and every file they refer to.
-const stylesheets: string[] = []
+// Font faces: the packages' stylesheets by the file they go to, and every file they refer to.
+const stylesheets: Record<FontFile, string[]> = { 'fonts.css': [], 'fonts-cjk.css': [] }
 const fileSources = new Map<string, URL>()
-for (const { name, stylesheets: names } of FONT_PACKAGES) {
+for (const { name, stylesheets: names, file: target } of FONT_PACKAGES) {
   const packageDir = new URL(`node_modules/${name}/`, root)
   // The SIL Open Font License travels with the fonts.
   await copyFile(
@@ -36,15 +43,16 @@ for (const { name, stylesheets: names } of FONT_PACKAGES) {
   )
   for (const stylesheet of names) {
     const css = await readFile(new URL(stylesheet, packageDir), 'utf8')
-    stylesheets.push(css)
+    stylesheets[target].push(css)
     for (const match of css.matchAll(/url\(\.\/files\/([^)]+)\)/g)) {
       const file = match[1] ?? ''
       fileSources.set(file, new URL(`files/${file}`, packageDir))
     }
   }
 }
-const fonts = fontsCss(stylesheets)
-for (const file of fonts.files) {
+const fonts = fontsCss(stylesheets['fonts.css'])
+const fontsCjk = fontsCss(stylesheets['fonts-cjk.css'])
+for (const file of [...fonts.files, ...fontsCjk.files]) {
   const source = fileSources.get(file)
   if (source === undefined) throw new Error(`no source for font file ${file}`)
   await copyFile(source, `${dist}fonts/${file}`)
@@ -53,6 +61,7 @@ for (const file of fonts.files) {
 const outputs: Record<string, string> = {
   'tokens.css': tokensCss(),
   'fonts.css': fonts.css,
+  'fonts-cjk.css': fontsCjk.css,
   'theme.css': themeCss(),
   'tokens.json': tokensJson(),
 }
@@ -62,5 +71,7 @@ for (const [file, content] of Object.entries(outputs)) {
 console.log(
   `@veljaos/tokens: wrote ${Object.keys(outputs)
     .map((file) => `dist/${file}`)
-    .join(', ')} and ${String(fonts.files.length)} font files in dist/fonts/`,
+    .join(
+      ', ',
+    )} and ${String(fonts.files.length + fontsCjk.files.length)} font files in dist/fonts/`,
 )

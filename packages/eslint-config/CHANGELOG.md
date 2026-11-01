@@ -8,9 +8,10 @@
 
   - **What it is:** the tokens, components and page templates of 0.1.0-alpha.5. The API is unchanged since then; this release makes it stable. From now on a breaking change raises the major version, and releases are published under the `latest` dist-tag.
   - **Upgrading from an alpha:** follow the release notes of 0.1.0-alpha.5 below (removed templates and print parts, read only instead of `disabled`, `unavailableReason`, renamed props), then the earlier alpha entries if you come from further back.
-  - **What changed since 0.1.0-alpha.5** (no change to the published code's behaviour):
+  - **One import to add for Chinese or Japanese.** The Chinese and Japanese font faces (330 `@font-face` rules, about 96 KB of CSS gzip) moved out of `@veljaos/tokens/tokens.css` into `@veljaos/tokens/fonts-cjk.css`. An application that shows Chinese or Japanese text adds `import '@veljaos/tokens/fonts-cjk.css'` after `tokens.css`; every other application changes nothing and loads about 96 KB less render-blocking CSS on every page (the example list and document pages: 151.6 → 32.0 KB gzip). `@veljaos/ui/styles.css` stays one file: all subpaths together add 4 KB to it.
+  - **What else changed since 0.1.0-alpha.5** (no change to the published code's behaviour):
     - every component with text keeps an Arabic and a Japanese story, checked in CI, and Serbian Latin and Cyrillic were checked across the catalogue;
-    - a performance budget: the list and document example screens stay under 250 KB of JavaScript and 160 KB of CSS (gzip);
+    - a performance budget: the list and document example screens stay under 250 KB of JavaScript and 35 KB of CSS (gzip);
     - comments in the code say what it does, without history;
     - the documentation is short rule documents by subject in `docs/`, a README and a slim AGENTS.md.
 

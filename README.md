@@ -25,6 +25,7 @@ pnpm add @veljaos/tokens @veljaos/ui
 
 ```tsx
 import '@veljaos/tokens/tokens.css'
+import '@veljaos/tokens/fonts-cjk.css' // only if the app shows Chinese or Japanese
 import '@veljaos/ui/styles.css'
 import { Button, LiroProvider } from '@veljaos/ui'
 
