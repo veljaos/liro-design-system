@@ -15,7 +15,7 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { Button } from './button'
 import { CheckboxField, SwitchField } from './checkbox-field'
-import { DialogHeading } from './dialog'
+import { DialogHeading, dialogHeaderClass } from './dialog'
 import { RadioGroupField } from './radio-group-field'
 import { SelectField } from './select-field'
 import { usePhone } from './use-phone'
@@ -30,6 +30,9 @@ import type { Intent } from './intents'
  * application keeps the choice. `preview` is the application's (a PageViewer it updates from
  * `onChange`). A dialog on a desktop, a full-screen sheet on phones. It renders nothing itself.
  */
+
+/** The second language's "None": a value no language code takes (a select needs a value). */
+const NO_SECOND = 'liro:none'
 
 /** One choice of an option, from the application. */
 export interface DocumentOption {
@@ -129,7 +132,7 @@ function OptionsBody(props: DocumentOptionsDialogProps & { phone: boolean }) {
     props.qr === true ||
     signatureModes.length > 0 ||
     papers.length > 0
-  const second = value.languages[1] ?? ''
+  const second = value.languages[1] ?? NO_SECOND
   const typeLabel = props.types.find((type) => type.value === value.type)?.label ?? value.type
 
   const fields = (
@@ -171,7 +174,7 @@ function OptionsBody(props: DocumentOptionsDialogProps & { phone: boolean }) {
                   value={value.languages[0] ?? ''}
                   onChange={(language) => {
                     set({
-                      languages: second === '' ? [language] : [language, second],
+                      languages: second === NO_SECOND ? [language] : [language, second],
                     })
                   }}
                 />
@@ -180,7 +183,7 @@ function OptionsBody(props: DocumentOptionsDialogProps & { phone: boolean }) {
                 <SelectField
                   label={messages['documentOptions.secondLanguage']}
                   options={[
-                    { value: '', label: messages['documentOptions.noSecondLanguage'] },
+                    { value: NO_SECOND, label: messages['documentOptions.noSecondLanguage'] },
                     ...options(
                       languages.filter((language) => language.value !== value.languages[0]),
                     ),
@@ -188,7 +191,7 @@ function OptionsBody(props: DocumentOptionsDialogProps & { phone: boolean }) {
                   value={second}
                   onChange={(language) => {
                     const first = value.languages[0] ?? ''
-                    set({ languages: language === '' ? [first] : [first, language] })
+                    set({ languages: language === NO_SECOND ? [first] : [first, language] })
                   }}
                 />
               )}
@@ -258,7 +261,7 @@ function OptionsBody(props: DocumentOptionsDialogProps & { phone: boolean }) {
 
   const parts = (
     <>
-      <DialogHeader>
+      <DialogHeader className={dialogHeaderClass(props.subject)}>
         <DialogTitle>
           <DialogHeading
             title={props.title ?? messages['documentOptions.title']}
@@ -267,7 +270,7 @@ function OptionsBody(props: DocumentOptionsDialogProps & { phone: boolean }) {
         </DialogTitle>
         <DialogCloseButton label={messages['dialog.close']} />
       </DialogHeader>
-      <DialogBody className="min-h-0 flex-1">
+      <DialogBody>
         {props.preview === undefined ? (
           fields
         ) : (
@@ -276,27 +279,27 @@ function OptionsBody(props: DocumentOptionsDialogProps & { phone: boolean }) {
             <div className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>{props.preview}</div>
           </div>
         )}
-      </DialogBody>
-      <DialogFooter>
-        <Button
-          intent="cancel"
-          label={messages['dialog.cancel']}
-          onClick={() => {
-            props.onOpenChange(false)
-          }}
-        />
-        {props.actions.map((action, index) => (
+        <DialogFooter>
           <Button
-            key={action.id}
-            intent={action.intent}
-            label={action.label}
-            {...(index === props.actions.length - 1 ? {} : { emphasis: 'secondary' as const })}
+            intent="cancel"
+            label={messages['dialog.cancel']}
             onClick={() => {
-              action.onClick(value)
+              props.onOpenChange(false)
             }}
           />
-        ))}
-      </DialogFooter>
+          {props.actions.map((action, index) => (
+            <Button
+              key={action.id}
+              intent={action.intent}
+              label={action.label}
+              emphasis={index === props.actions.length - 1 ? 'primary' : 'secondary'}
+              onClick={() => {
+                action.onClick(value)
+              }}
+            />
+          ))}
+        </DialogFooter>
+      </DialogBody>
     </>
   )
 

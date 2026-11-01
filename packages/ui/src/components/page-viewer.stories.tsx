@@ -289,6 +289,7 @@ export const RendererAreas: Story = {
     regions: [],
     areas: A4_AREAS,
     defaultPage: 2,
+    defaultFit: 'page',
     onDownload: () => undefined,
   },
   play: async ({ canvasElement }) => {

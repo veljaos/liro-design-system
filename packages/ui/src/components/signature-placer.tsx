@@ -290,6 +290,7 @@ export function SignaturePlacer(props: SignaturePlacerProps) {
         areas={areas}
         page={page}
         onPageChange={setPage}
+        defaultFit="page"
         className="h-[36rem] min-w-0 flex-1"
         {...(props.onDownload === undefined ? {} : { onDownload: props.onDownload })}
         overlay={(shown) => (

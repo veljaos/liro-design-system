@@ -9,7 +9,7 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
 import { FOCUS_RING, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -82,6 +82,8 @@ export interface PageViewerProps {
   zoom?: number
   /** The zoom at first. Default 100: the page fits the width. */
   defaultZoom?: number
+  /** 'page' opens with the whole page in view (as "Fit page"), instead of `defaultZoom`. */
+  defaultFit?: 'width' | 'page'
   onZoomChange?: (zoom: number) => void
   /** Where values were read: rectangles in the pages' units. */
   regions?: readonly PageRegion[]
@@ -219,6 +221,13 @@ export function PageViewer(props: PageViewerProps) {
     // The page's 16px padding on each side stays around it.
     zoomTo(fitPageZoom(current, { width: area.clientWidth - 32, height: area.clientHeight - 32 }))
   }
+  // `defaultFit="page"`: the first page drawn is fitted once, before it is painted.
+  const fitted = useRef(props.defaultFit !== 'page')
+  useLayoutEffect(() => {
+    if (fitted.current || !ready) return
+    fitted.current = true
+    fitPage()
+  })
   const pageAreas = (props.areas ?? []).filter((area) => area.page === page)
   const zoomOut = zoomStep(zoom, 'out')
   const zoomIn = zoomStep(zoom, 'in')
