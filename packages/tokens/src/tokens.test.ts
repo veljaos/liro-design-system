@@ -324,23 +324,40 @@ describe('fonts', () => {
   it('imports the font faces first, and keeps every subset downloadable on demand', () => {
     assert.match(tokens, /^\/\*[^]*?\*\/\n[^]*?@import '\.\/fonts\.css';/)
     assert.equal(tokens.indexOf('@import'), tokens.indexOf("@import './fonts.css';"))
-    const stylesheets = FONT_PACKAGES.flatMap(({ name, stylesheets: names }) =>
-      names.map((file) =>
-        readFileSync(new URL(`../node_modules/${name}/${file}`, import.meta.url), 'utf8'),
-      ),
-    )
-    const { css, files } = fontsCss(stylesheets)
-    const faces = css.split('@font-face').slice(1)
-    assert.equal(faces.length, files.length)
-    for (const face of faces) {
-      assert.match(face, /unicode-range: U\+/)
-      assert.match(face, /url\(\.\/fonts\/[\w.[\]-]+\.woff2\)/)
+    const stylesheetsOf = (target: string) =>
+      FONT_PACKAGES.filter(({ file }) => file === target).flatMap(({ name, stylesheets: names }) =>
+        names.map((file) =>
+          readFileSync(new URL(`../node_modules/${name}/${file}`, import.meta.url), 'utf8'),
+        ),
+      )
+    const fonts = fontsCss(stylesheetsOf('fonts.css'))
+    const cjk = fontsCss(stylesheetsOf('fonts-cjk.css'))
+    for (const { css, files } of [fonts, cjk]) {
+      const faces = css.split('@font-face').slice(1)
+      assert.equal(faces.length, files.length)
+      for (const face of faces) {
+        assert.match(face, /unicode-range: U\+/)
+        assert.match(face, /url\(\.\/fonts\/[\w.[\]-]+\.woff2\)/)
+      }
     }
     for (const family of Object.values(FONT_FAMILY)) {
-      assert.ok(css.includes(`font-family: '${family}';`), `fonts.css has no ${family}`)
+      const both = fonts.css + cjk.css
+      assert.ok(both.includes(`font-family: '${family}';`), `no font file has ${family}`)
     }
     // Serbian Cyrillic italics need an italic Noto Sans.
-    assert.match(css, /font-family: 'Noto Sans Variable';\s*font-style: italic;/)
+    assert.match(fonts.css, /font-family: 'Noto Sans Variable';\s*font-style: italic;/)
+  })
+
+  it('keeps the Chinese and Japanese faces out of fonts.css, in fonts-cjk.css only', () => {
+    const cjk = ['Noto Sans SC Variable', 'Noto Sans TC Variable', 'Noto Sans JP Variable']
+    const placed = Object.fromEntries(FONT_PACKAGES.map(({ name, file }) => [name, file]))
+    for (const family of ['sc', 'tc', 'jp']) {
+      assert.equal(placed[`@fontsource-variable/noto-sans-${family}`], 'fonts-cjk.css')
+    }
+    const core = FONT_PACKAGES.filter(({ file }) => file === 'fonts.css')
+    assert.equal(core.length, 6)
+    for (const { name } of core) assert.ok(!/-(sc|tc|jp)$/.test(name), name)
+    assert.equal(cjk.length, 3)
   })
 
   it('puts the right CJK family first for Chinese, Traditional Chinese and Japanese', () => {

@@ -15,6 +15,7 @@
   "exports": {
     "./tokens.css": "./dist/tokens.css",
     "./fonts.css": "./dist/fonts.css",
+    "./fonts-cjk.css": "./dist/fonts-cjk.css",
     "./theme.css": "./dist/theme.css",
     "./tokens.json": "./dist/tokens.json",
     "./fonts/*": "./dist/fonts/*",

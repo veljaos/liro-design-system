@@ -3,6 +3,8 @@
  * by the Tailwind Vite plugin, with the stories and this catalogue added as sources.
  */
 @import '@veljaos/tokens/tokens.css';
+/* The Chinese and Japanese faces, which an application imports only when it shows those scripts. */
+@import '@veljaos/tokens/fonts-cjk.css';
 @import '../../../packages/ui/src/styles.css';
 @source '../../../packages/ui/src/**/*.stories.tsx';
 @source './';

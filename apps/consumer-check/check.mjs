@@ -42,6 +42,7 @@ console.log(
 const require = createRequire(import.meta.url)
 for (const specifier of [
   '@veljaos/tokens/tokens.css',
+  '@veljaos/tokens/fonts-cjk.css',
   '@veljaos/tokens/theme.css',
   '@veljaos/tokens/tokens.json',
   '@veljaos/ui/styles.css',

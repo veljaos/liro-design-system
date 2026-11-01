@@ -1,7 +1,7 @@
 /**
  * Writes the published files of @veljaos/tokens from src/tokens.ts: tokens.css (the --liro-*
- * variables and the base typography), fonts.css (the font faces), theme.css (the Tailwind v4
- * theme) and tokens.json.
+ * variables and the base typography), fonts.css (the font faces), fonts-cjk.css (the Chinese and
+ * Japanese faces, imported only where needed), theme.css (the Tailwind v4 theme) and tokens.json.
  */
 import {
   BRAND_STACK,
@@ -205,23 +205,34 @@ export function tokensCss(): string {
   ].join('\n')
 }
 
-/** A font package and the stylesheets of it that fonts.css includes (variable weight axis only). */
-export const FONT_PACKAGES: { name: string; stylesheets: string[] }[] = [
-  { name: '@fontsource-variable/noto-sans', stylesheets: ['wght.css', 'wght-italic.css'] },
-  { name: '@fontsource-variable/noto-sans-arabic', stylesheets: ['wght.css'] },
-  { name: '@fontsource-variable/noto-sans-hebrew', stylesheets: ['wght.css'] },
-  { name: '@fontsource-variable/noto-sans-sc', stylesheets: ['wght.css'] },
-  { name: '@fontsource-variable/noto-sans-tc', stylesheets: ['wght.css'] },
-  { name: '@fontsource-variable/noto-sans-jp', stylesheets: ['wght.css'] },
-  { name: '@fontsource-variable/space-grotesk', stylesheets: ['wght.css'] },
-  { name: '@fontsource-variable/inter', stylesheets: ['wght.css'] },
-  { name: '@fontsource-variable/jetbrains-mono', stylesheets: ['wght.css'] },
+/**
+ * A font package, the stylesheets of it that are included (variable weight axis only) and the
+ * file its faces go to: fonts.css, which tokens.css imports, or fonts-cjk.css, which only an
+ * application that shows Chinese or Japanese imports (330 faces, about 91 KB gzip of CSS).
+ */
+export const FONT_PACKAGES: { name: string; stylesheets: string[]; file: FontFile }[] = [
+  {
+    name: '@fontsource-variable/noto-sans',
+    stylesheets: ['wght.css', 'wght-italic.css'],
+    file: 'fonts.css',
+  },
+  { name: '@fontsource-variable/noto-sans-arabic', stylesheets: ['wght.css'], file: 'fonts.css' },
+  { name: '@fontsource-variable/noto-sans-hebrew', stylesheets: ['wght.css'], file: 'fonts.css' },
+  { name: '@fontsource-variable/noto-sans-sc', stylesheets: ['wght.css'], file: 'fonts-cjk.css' },
+  { name: '@fontsource-variable/noto-sans-tc', stylesheets: ['wght.css'], file: 'fonts-cjk.css' },
+  { name: '@fontsource-variable/noto-sans-jp', stylesheets: ['wght.css'], file: 'fonts-cjk.css' },
+  { name: '@fontsource-variable/space-grotesk', stylesheets: ['wght.css'], file: 'fonts.css' },
+  { name: '@fontsource-variable/inter', stylesheets: ['wght.css'], file: 'fonts.css' },
+  { name: '@fontsource-variable/jetbrains-mono', stylesheets: ['wght.css'], file: 'fonts.css' },
 ]
 
+/** The two font stylesheets. */
+export type FontFile = 'fonts.css' | 'fonts-cjk.css'
+
 /**
- * fonts.css from the font packages' stylesheets: every @font-face keeps its unicode-range, so
- * a browser downloads a subset only when the page has a character in it. The files move from
- * ./files/ to ./fonts/. Returns the CSS and the file names it refers to.
+ * A font stylesheet from the font packages' stylesheets: every @font-face keeps its
+ * unicode-range, so a browser downloads a subset only when the page has a character in it. The
+ * files move from ./files/ to ./fonts/. Returns the CSS and the file names it refers to.
  */
 export function fontsCss(stylesheets: string[]): { css: string; files: string[] } {
   const files: string[] = []
