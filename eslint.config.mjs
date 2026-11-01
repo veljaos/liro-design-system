@@ -1,4 +1,4 @@
-// Root ESLint configuration. Changing this file is a protected change (BUILD-PLAN rule 10).
+// Root ESLint configuration. Changing this file is a protected change (see AGENTS.md).
 import js from '@eslint/js'
 import prettier from 'eslint-config-prettier/flat'
 import jsxA11y from 'eslint-plugin-jsx-a11y'
@@ -93,11 +93,11 @@ export default defineConfig(
     extends: [reactHooks.configs.flat['recommended-latest']],
   },
 
-  // Exceptions (AGENTS.md W8), each for one file, with its reason.
+  // Exceptions, each for one file, with its reason.
   {
     // The column-resize handle is a focusable separator with arrow keys and a pointer drag: the
     // WAI-ARIA window-splitter pattern, an interactive widget in ARIA 1.2. jsx-a11y counts every
-    // separator as non-interactive (P3.2, docs/decisions.md "Table").
+    // separator as non-interactive.
     files: ['packages/ui/src/components/data-table-resize.tsx'],
     rules: {
       'jsx-a11y/no-noninteractive-tabindex': [
@@ -110,10 +110,7 @@ export default defineConfig(
   {
     // TanStack Virtual's useVirtualizer returns functions the React Compiler cannot memoize, so
     // the compiler would skip these components; the warning says only that. The package is not
-    // built with the compiler (P3.2, docs/decisions.md "Table"). Every list that draws only its
-    // rows in view calls it (P5.21a): DataTable, EditableGrid, LookupField and the company
-    // switcher (MatchingView was removed in P5.23), the trees' row window (P5.9) and
-    // AttendanceGrid (P5.13).
+    // built with the compiler. Every list that draws only its rows in view calls it.
     files: [
       'packages/ui/src/components/data-table.tsx',
       'packages/ui/src/components/editable-grid.tsx',
@@ -134,8 +131,7 @@ export default defineConfig(
   },
   {
     // Microsoft's and Google's official sign-in marks keep their own colours, as their branding
-    // rules require; no Liro meaning may stand in (P5.6, docs/decisions.md "Sign-in building
-    // blocks"). Logical properties still apply.
+    // rules require; no Liro meaning may stand in. Logical properties still apply.
     files: ['packages/ui/src/components/provider-marks.tsx'],
     rules: { 'liro/no-raw-colors': 'off' },
   },

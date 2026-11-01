@@ -1,13 +1,12 @@
-// Changing this file is a protected change (BUILD-PLAN rule 10).
+// Changing this file is a protected change (see AGENTS.md).
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { openEntry, readEntries, type Entry, type Mode } from './support'
 
-// Phones never scroll sideways (P5.28 item 1), and an overlay on a phone covers the whole screen
-// (item 5). Every phone story — a story whose name says it is drawn on a phone ("…, phone",
+// Phones never scroll sideways, and an overlay on a phone covers the whole screen. Every phone story — a story whose name says it is drawn on a phone ("…, phone",
 // "Phone width", "handheld", "mobile") — is opened in a window of a phone's width with room for
 // the story's margins (456 × 900), so the components lay themselves out as on a phone (below
 // 48em) and their floating lists keep inside the window. The screen is the story's PhoneFrame
-// (`data-liro-phone-frame`, 390 × 844, P5.28 item 11) when it draws one, else the window. On it:
+// (`data-liro-phone-frame`, 390 × 844) when it draws one, else the window. On it:
 // - the page does not scroll sideways (the frame's page, or the document);
 // - every open overlay (a floating list, menu or popover, a dialog, a sheet) lies inside the
 //   screen, and nothing inside it is wider than its own box (an option cut off is lost text; a

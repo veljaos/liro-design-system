@@ -1,4 +1,4 @@
-// Changing this file is a protected change (BUILD-PLAN rule 10).
+// Changing this file is a protected change (see AGENTS.md).
 import { expect, test } from '@playwright/test'
 import {
   brokenWords,
@@ -12,11 +12,10 @@ import {
 
 // Story tests: every story and docs page renders, its play function passes, no report fails
 // (the accessibility addon reports with test: "error"), and nothing is logged as an error.
-// No open option list, menu or popover is wider inside than its box (P3.2a): a sideways
+// No open option list, menu or popover is wider inside than its box: a sideways
 // scrollbar there covers the highlighted option. In a right-to-left mode, every text of a story
-// keeps its own word order (D15): "4 items" never reads "items 4" (Phase 5 part 2). A word in a
-// button, a tab, a menu item or a label never breaks inside, and a button's text stays in its box
-// (P5.94 item 4).
+// keeps its own word order: "4 items" never reads "items 4". A word in a
+// button, a tab, a menu item or a label never breaks inside, and a button's text stays in its box.
 for (const entry of readEntries()) {
   for (const mode of MODES) {
     test(`${entry.title} / ${entry.name} [${modeName(mode)}]`, async ({ page }) => {
@@ -27,12 +26,10 @@ for (const entry of readEntries()) {
         [],
       )
       if (entry.type === 'story') {
-        expect(await brokenWords(page), 'words in controls and labels never break (P5.94)').toEqual(
-          [],
-        )
+        expect(await brokenWords(page), 'words in controls and labels never break').toEqual([])
       }
       if (entry.type === 'story' && mode.direction === 'rtl') {
-        expect(await textOutOfOrder(page), 'texts must keep their own order (D15)').toEqual([])
+        expect(await textOutOfOrder(page), 'texts must keep their own order').toEqual([])
       }
     })
   }

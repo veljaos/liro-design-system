@@ -1,16 +1,15 @@
-# Changing this file is a protected change (BUILD-PLAN rule 10).
+# Changing this file is a protected change (see AGENTS.md).
 #
-# Regenerates the visual baselines on CI's machines (P4.0) instead of locally with Docker
+# Regenerates the visual baselines on CI's machines instead of locally with Docker
 # (scripts/update-baselines.mjs, 30–40 minutes): the visual suite is split into twenty-four parts, one
 # machine each, in the same pinned Playwright image as CI, and every new or changed image is
 # returned as ONE artifact `baselines` for review. Nothing is committed by the workflow: the
-# images are reviewed and committed by hand (AGENTS.md, "How to refresh visual baselines").
+# images are reviewed and committed by hand (AGENTS.md, "Visual baselines").
 #
 # Two ways to start it:
 # - push a commit whose message contains `[baselines]` to a `bp/*` branch (the agent's way: it
 #   needs no permission beyond pushing its branch);
-# - "Run workflow" on the Actions tab, choosing the branch (the owner's way; available once this
-#   file is on main).
+# - "Run workflow" on the Actions tab, choosing the branch.
 name: Baselines
 
 on:
@@ -70,8 +69,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The shard count (24) is also written in the job name and the run step (twelve until P5.44,
-        # when a part reached Playwright's 25 minutes).
+        # The shard count (24) is also written in the job name and the run step.
         shard:
           [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
     steps:
@@ -94,7 +92,7 @@ jobs:
 
       # Playwright writes only the images that are new or differ (`changed`); the marker file
       # finds exactly those. A story whose interaction fails writes no image and fails this
-      # part (P3.0), so a broken story never becomes a baseline.
+      # part, so a broken story never becomes a baseline.
       - name: Visual tests with --update-snapshots=changed, part ${{ matrix.shard }} of 24
         run: |
           touch /tmp/marker

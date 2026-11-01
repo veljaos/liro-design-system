@@ -1,4 +1,4 @@
-# Changing this file is a protected change (BUILD-PLAN rule 10).
+# Changing this file is a protected change (see AGENTS.md).
 #
 # Publishes @veljaos/tokens, @veljaos/ui and @veljaos/eslint-config to GitHub Packages when a
 # version tag (v0.1.0-alpha.0, v1.0.0, …) is pushed. It uses the workflow's own GITHUB_TOKEN with

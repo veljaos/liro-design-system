@@ -1,4 +1,4 @@
-// Changing this file is a protected change (BUILD-PLAN rule 10).
+// Changing this file is a protected change (see AGENTS.md).
 /**
  * The axe rule tags for WCAG 2.2 AA: every rule tagged for levels A and AA of WCAG 2.0, 2.1
  * and 2.2. Used by the Storybook accessibility addon and by the Playwright accessibility run.

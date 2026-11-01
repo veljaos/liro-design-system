@@ -1,4 +1,4 @@
-// Changing this file is a protected change (BUILD-PLAN rule 10).
+// Changing this file is a protected change (see AGENTS.md).
 import type { Page } from '@playwright/test'
 import { readFileSync } from 'node:fs'
 
@@ -12,10 +12,10 @@ export interface Entry {
 }
 
 /**
- * The tag of a story that reaches its state by clicking, typing, focusing or scrolling (P5.23):
+ * The tag of a story that reaches its state by clicking, typing, focusing or scrolling:
  * the story tests and the accessibility checks run it; the visual test takes no picture of it.
  * The look it reaches has a static story that renders that state directly from its args or
- * initial state (docs/decisions.md, "Visual stories are static").
+ * initial state.
  */
 export const INTERACTION_TAG = 'interaction'
 
@@ -178,15 +178,15 @@ export async function sidewaysOverflow(page: Page): Promise<string[]> {
 }
 
 /**
- * The visible texts of a right-to-left page whose word order the page's direction would break
- * (D15, P5 part 2): a text without right-to-left letters that starts or ends with something
+ * The visible texts of a right-to-left page whose word order the page's direction would break:
+ * a text without right-to-left letters that starts or ends with something
  * other than a letter ("4 items", "40 h", "Alfa Trade d.o.o.", "05.10.2026. – 11.10.2026."),
  * whose own element and inline ancestors set neither `unicode-bidi: plaintext` (TEXT_DIRECTION,
  * TEXT_ISOLATE) nor `dir="auto"` nor `bdi`, nor a left-to-right direction. A paragraph's
  * direction is its block's: `unicode-bidi` is not inherited, so a block child (a flex item
  * included) of a text-direction element starts again from the page's direction. A bare number
  * ("2026", "08:00") has nothing to reorder. Typed text (inputs, text areas) belongs to its field
- * (`dir="auto"`, P3.6c), and charts draw their own SVG text; both are left out.
+ * (`dir="auto"`), and charts draw their own SVG text; both are left out.
  */
 export async function textOutOfOrder(page: Page): Promise<string[]> {
   return page.evaluate(() => {
@@ -232,7 +232,7 @@ export async function textOutOfOrder(page: Page): Promise<string[]> {
 }
 
 /**
- * P5.94 (item 4): the words of the controls and labels. A word inside a button, a tab, a menu item,
+ * The words of the controls and labels. A word inside a button, a tab, a menu item,
  * a legend or a label never stands on two lines (a break inside it: "Vouche r"), and a button's
  * text never runs out of its box unless it is clipped on purpose (an ellipsis, `FittedLabel`).
  * Words of scripts that break between characters (Chinese, Japanese, Korean, Thai) are not

@@ -1,12 +1,12 @@
-// Changing this file is a protected change (BUILD-PLAN rule 10).
+// Changing this file is a protected change (see AGENTS.md).
 import { expect, test, type Page } from '@playwright/test'
 import { openEntry, type Mode } from './support'
 
-// The map's marks follow the user's real input (P5.96a, the owner's review of P5.96): after a
+// The map's marks follow the user's real input: after a
 // drill-down by mouse or touch no area is outlined, named or showing its tooltip until the pointer
 // moves over one; leaving the map clears every mark; the focus ring and the keys' area show only
 // when the focus came from the keyboard. Real input only (page.mouse, page.touchscreen,
-// page.keyboard), as the owner uses it — never synthetic events.
+// page.keyboard), never synthetic events.
 
 const MODE: Mode = { theme: 'light', direction: 'ltr' }
 
@@ -153,7 +153,7 @@ test('Map: the keys show the focus ring and the area they reach', async ({ page 
   await expect.poll(() => marks(page)).toEqual(NO_MARKS)
 })
 
-// One hover look for every area (P5.96b, the owner's review of P5.96a): every area of every
+// One hover look for every area: every area of every
 // level, hovered with the real mouse, shows the same look — its tooltip, its whole line drawn over
 // its neighbours (the last area drawn), a solid line, and no name on the area.
 
@@ -266,7 +266,7 @@ for (const level of LEVELS) {
 }
 
 /**
- * The city municipalities of the five divided cities, reached as the owner does: real clicks down
+ * The city municipalities of the five divided cities, reached by real clicks down
  * the drill-down, every area of every level on the way hovered too.
  */
 const CITIES = [
