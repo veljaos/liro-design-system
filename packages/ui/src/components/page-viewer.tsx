@@ -309,6 +309,8 @@ export function PageViewer(props: PageViewerProps) {
           >
             <ZoomIn aria-hidden="true" className="size-4" />
           </ToolButton>
+        </div>
+        <div className="flex items-center gap-1">
           <ToolButton
             label={messages['viewer.fitWidth']}
             disabled={!ready || zoom === 100}
