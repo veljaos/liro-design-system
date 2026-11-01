@@ -379,7 +379,7 @@ export const PrintoutInvoiceInteraction: Story = {
     await settle()
     await userEvent.click(await canvas.findByRole('button', { name: 'Download PDF' }))
     const dialog = await body.findByRole('dialog', { name: /Print or export/ })
-    await expect(within(dialog).getByText(`Invoice ${FEATURED}`)).toBeVisible()
+    await waitFor(() => expect(within(dialog).getByText(`Invoice ${FEATURED}`)).toBeVisible())
     await userEvent.click(within(dialog).getByRole('button', { name: 'Download PDF' }))
     await waitFor(() => expect(canvas.getByText(`${FEATURED}.pdf downloaded`)).toBeVisible())
     await userEvent.click(canvas.getByRole('link', { name: `Back to ${FEATURED}` }))

@@ -271,8 +271,8 @@ function OptionsBody(props: DocumentOptionsDialogProps & { phone: boolean }) {
         {props.preview === undefined ? (
           fields
         ) : (
-          <div className="flex flex-col gap-6 md:flex-row">
-            <div className="md:w-72 md:shrink-0">{fields}</div>
+          <div className={cn('flex gap-6', props.phone ? 'flex-col' : 'flex-row')}>
+            <div className={props.phone ? undefined : 'w-72 shrink-0'}>{fields}</div>
             <div className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>{props.preview}</div>
           </div>
         )}

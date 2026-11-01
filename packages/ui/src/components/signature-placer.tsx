@@ -18,6 +18,7 @@ import {
 import { PageViewer } from './page-viewer'
 import { regionBox, type ViewerPage } from './page-viewer-logic'
 import { RadioGroupField } from './radio-group-field'
+import { useBelowMd } from './use-phone'
 
 /*
  * SignaturePlacer: where each signer signs a document shown as page images. One box per signer,
@@ -73,6 +74,8 @@ interface Drag {
 /** Where each signer signs: one box per signer, placed by pointer, touch, keys or an area. */
 export function SignaturePlacer(props: SignaturePlacerProps) {
   const { messages, format } = useLiro()
+  // Stacked below md, and inside a frame that stands for a phone: the signers above the page.
+  const stacked = useBelowMd()
   const hintId = useId()
   const size = props.boxSize ?? SIGNATURE_SIZE
   const [innerActive, setInnerActive] = useState(props.signers[0]?.id ?? '')
@@ -207,9 +210,9 @@ export function SignaturePlacer(props: SignaturePlacerProps) {
   return (
     <div
       data-slot="signature-placer"
-      className={cn('flex flex-col gap-4 font-sans md:flex-row', props.className)}
+      className={cn('flex gap-4 font-sans', stacked ? 'flex-col' : 'flex-row', props.className)}
     >
-      <div className="flex flex-col gap-4 md:w-72 md:shrink-0">
+      <div className={cn('flex flex-col gap-4', !stacked && 'w-72 shrink-0')}>
         <RadioGroupField
           label={messages['signature.signers']}
           value={active}

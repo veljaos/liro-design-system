@@ -40,7 +40,7 @@ function Placer({
         }}
       />
       <section aria-label="Returned coordinates" className="font-sans">
-        <h3 className="m-0 mb-2 text-sm font-semibold text-primary">
+        <h3 className="bidi-content m-0 mb-2 text-sm font-semibold text-primary">
           Returned to the application (PDF points, origin at the page’s bottom-left)
         </h3>
         <KeyValueList
