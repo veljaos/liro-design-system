@@ -52,7 +52,7 @@ import {
   type Signer,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
-import { FolioPdf } from './folio-pdf'
+import { ANNEX_AREAS, FolioPdf } from './folio-pdf'
 import { Navigate, ROUTES } from './example-shell'
 import { useExampleState } from './example-state'
 import { Tenant } from './screens-G'
@@ -734,7 +734,6 @@ export function PayslipScreen({ phone }: { phone: boolean }) {
  * (FolioPdf stands in for it in the examples).
  */
 export function PayslipPdfScreen() {
-  const { format } = useLiro()
   const navigate = useContext(Navigate)
   const slip = SEPTEMBER
   return (
@@ -753,10 +752,7 @@ export function PayslipPdfScreen() {
           </p>
         </header>
         <main className="box-border flex min-w-0 flex-1 flex-col p-4">
-          <FolioPdf
-            fileName={`${slip.number}.pdf`}
-            detail={`Payslip · ${monthName(slip.month, format)} · ${EMPLOYEE.company}`}
-          />
+          <FolioPdf fileName={`${slip.number}.pdf`} />
         </main>
       </div>
     </Tenant>
@@ -1311,11 +1307,11 @@ export function DocumentsScreen({ phone }: { phone: boolean }) {
   )
 }
 
-/** The annex as it is signed: liro-folio's PDF (FolioPdf stands in for it). */
+/** The annex as it is signed: liro-folio's pages, with the fields to sign marked. */
 function AnnexSheet() {
   return (
     <div className="p-4">
-      <FolioPdf fileName={`${DOCUMENTS[0]?.id ?? 'annex'}.pdf`} detail={ANNEX.title} />
+      <FolioPdf fileName={`${DOCUMENTS[0]?.id ?? 'annex'}.pdf`} pages={2} areas={ANNEX_AREAS} />
     </div>
   )
 }

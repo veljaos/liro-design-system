@@ -10,8 +10,16 @@
   (`FilePreview`, `DocumentFrame`, `PageViewer`; `ReceiptResult` at the till).
 - A screen printed as you see it (a report, a chart, a list, a screen's `@media print` rules) is
   not a document and stays.
-- **E-signature coordinates:** liro-folio returns each signature area as its page (from 1) and its
-  rectangle `x y width height` in PDF points, origin at the page's bottom-left.
+
+## The liro-folio contract
+
+- With every PDF, optional PNG page images (about 150 dpi, optionally 2×), each with its page's
+  `width` and `height` in PDF points. The page size comes from these; never assume A4.
+- `areas`: `[{ name, kind: "signature" | "text" | "choice", page, x, y, width, height }]`. Pages
+  count from 1; `x y width height` are PDF points, origin at the page's bottom-left.
+- Signature areas are 190 × 48 pt and are also empty AcroForm signature fields.
+- The screens (`PageViewer`, `SignaturePlacer`, `DocumentOptionsDialog`) only draw: props in,
+  callbacks out, no call to liro-folio. They never re-format the document's amounts or dates.
 
 ## DocumentFrame protocol
 

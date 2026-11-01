@@ -1,9 +1,21 @@
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  ListChecks,
+  Maximize2,
+  MoveHorizontal,
+  PenLine,
+  Type,
+  ZoomIn,
+  ZoomOut,
+} from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
 import { FOCUS_RING, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
+import { Button } from './button'
+import { fitPageZoom, toTopLeft, type DocumentArea, type DocumentAreaKind } from './document-areas'
 import { zoomStep } from './document-frame-protocol'
 import { ErrorState } from './empty-state'
 import {
@@ -45,7 +57,15 @@ export type { PageRegion, RegionBox, ViewerPage } from './page-viewer-logic'
  * - Loading: a page-shaped skeleton. `error`: an ErrorState with "Try again" (`onRetry`).
  *   `unavailable`: the application's own words and actions in place of the pages (a file locked
  *   with a password). The toolbar waits while any of them is shown.
- * Controlled (`page`, `zoom`) or not (`defaultPage`, `defaultZoom`). It never reads the file.
+ * - `areas`: where the document asks to sign or fill (signature, text, choice), in PDF points from
+ *   the page's bottom-left corner, as a PDF renderer returns them: a dashed frame with the kind's
+ *   icon and the area's name, listed for assistive technology under each page.
+ * - Each page keeps its own size (A4, A5, landscape, a thermal roll): "Fit width" (100%) and
+ *   "Fit page" (the whole page in view). `onDownload` adds "Download PDF" at the toolbar's end.
+ * - `overlay` draws the application's or a component's layer over the shown page (the signature
+ *   placer's boxes).
+ * Controlled (`page`, `zoom`) or not (`defaultPage`, `defaultZoom`). It never reads the file and
+ * never re-formats what the pages show.
  */
 
 export interface PageViewerProps {
@@ -75,8 +95,20 @@ export interface PageViewerProps {
   onRetry?: () => void
   /** In place of the pages, the application's words and actions (a file locked with a password). */
   unavailable?: ReactNode
+  /** Areas to sign or fill, in PDF points from each page's bottom-left corner. */
+  areas?: readonly DocumentArea[]
+  /** Adds "Download PDF" at the toolbar's end. */
+  onDownload?: () => void
+  /** A layer over the shown page, the size of the page (its own pointer and key handling). */
+  overlay?: (page: { number: number; width: number; height: number }) => ReactNode
   /** Layout classes (the viewer's height, e.g. "h-[32rem]"). Default 480px. */
   className?: string
+}
+
+const AREA_ICON: Record<DocumentAreaKind, typeof PenLine> = {
+  signature: PenLine,
+  text: Type,
+  choice: ListChecks,
 }
 
 function ToolButton({
@@ -180,6 +212,14 @@ export function PageViewer(props: PageViewerProps) {
   const region = regions.find((each) => each.id === highlight && each.page === page)
   const box = region === undefined || current === undefined ? null : regionBox(region, current)
   const shownRegion = ready && region !== undefined && box !== null ? region : undefined
+  const scrollArea = useRef<HTMLDivElement>(null)
+  const fitPage = () => {
+    const area = scrollArea.current
+    if (area === null || current === undefined) return
+    // The page's 16px padding on each side stays around it.
+    zoomTo(fitPageZoom(current, { width: area.clientWidth - 32, height: area.clientHeight - 32 }))
+  }
+  const pageAreas = (props.areas ?? []).filter((area) => area.page === page)
   const zoomOut = zoomStep(zoom, 'out')
   const zoomIn = zoomStep(zoom, 'in')
   const zoomText = format.percent(String(zoom))
@@ -260,7 +300,29 @@ export function PageViewer(props: PageViewerProps) {
           >
             <ZoomIn aria-hidden="true" className="size-4" />
           </ToolButton>
+          <ToolButton
+            label={messages['viewer.fitWidth']}
+            disabled={!ready || zoom === 100}
+            onClick={() => {
+              zoomTo(100)
+            }}
+          >
+            <MoveHorizontal aria-hidden="true" className="size-4" />
+          </ToolButton>
+          <ToolButton label={messages['viewer.fitPage']} disabled={!ready} onClick={fitPage}>
+            <Maximize2 aria-hidden="true" className="size-4" />
+          </ToolButton>
         </div>
+        {props.onDownload !== undefined && (
+          <div className="ms-auto">
+            <Button
+              intent="download"
+              label={messages['viewer.downloadPdf']}
+              emphasis="secondary"
+              onClick={props.onDownload}
+            />
+          </div>
+        )}
       </div>
       <p role="status" className="sr-only">
         {shownRegion?.label === undefined
@@ -305,6 +367,7 @@ export function PageViewer(props: PageViewerProps) {
         // The page is paper: drawn left to right in every direction, its regions where they were
         // measured. The area scrolls in both directions above 100%.
         <div
+          ref={scrollArea}
           dir="ltr"
           aria-label={props.label}
           {...SCROLL_AREA}
@@ -327,6 +390,32 @@ export function PageViewer(props: PageViewerProps) {
                 draggable={false}
                 className="block size-full select-none"
               />
+              {pageAreas.map((area) => {
+                const shown = regionBox(toTopLeft(area, current.height), current)
+                if (shown === null) return null
+                const Icon = AREA_ICON[area.kind]
+                return (
+                  <div
+                    key={area.name}
+                    aria-hidden="true"
+                    data-slot="page-viewer-area"
+                    data-kind={area.kind}
+                    className="pointer-events-none absolute box-border rounded-xs border-[1.5px] border-dashed border-strong bg-surface-sunken/40"
+                    style={{
+                      insetInlineStart: shown.left,
+                      top: shown.top,
+                      width: shown.width,
+                      height: shown.height,
+                    }}
+                  >
+                    <span className="absolute start-0 bottom-full mb-0.5 flex max-w-[200%] items-center gap-1 rounded-xs bg-surface-raised px-1 text-xs whitespace-nowrap text-secondary">
+                      <Icon aria-hidden="true" className="size-3 shrink-0" />
+                      <span className={TEXT_ISOLATE}>{area.label ?? area.name}</span>
+                    </span>
+                  </div>
+                )
+              })}
+              {props.overlay?.({ number: page, width: current.width, height: current.height })}
               {shownRegion !== undefined && box !== null && (
                 <div
                   ref={mark}
@@ -360,6 +449,15 @@ export function PageViewer(props: PageViewerProps) {
                 </div>
               )}
             </div>
+          )}
+          {pageAreas.length > 0 && (
+            <ul data-slot="page-viewer-area-list" className="sr-only">
+              {pageAreas.map((area) => (
+                <li key={area.name}>
+                  {messages['viewer.area'](area.kind, area.label ?? area.name, pageText)}
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       )}

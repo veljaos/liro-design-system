@@ -16,6 +16,7 @@ import { D2_ROUTES } from './screens-D2'
 import { ExampleApp, OnPhone } from './example-app'
 import { ROUTES } from './example-shell'
 import { F_ROUTES } from './screens-F'
+import { ANNEX_SIGNATURES_ROUTE } from './screens-print'
 
 const meta = {
   title: 'Examples/F3 Document',
@@ -363,8 +364,8 @@ export const D1InvoiceDraftPhone: Story = {
 }
 
 /**
- * The invoice's "PDF" opens liro-folio's PDF (a stand-in in the examples); the back button
- * returns to the invoice.
+ * The invoice's "PDF" opens liro-folio's pages in the page viewer; "Download PDF" asks for the
+ * document's options first; the back button returns to the invoice.
  */
 export const PrintoutInvoiceInteraction: Story = {
   name: 'Invoice PDF from its page, interaction',
@@ -373,14 +374,63 @@ export const PrintoutInvoiceInteraction: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
+    const body = within(document.body)
     await userEvent.click(canvas.getByRole('button', { name: 'PDF' }))
     await settle()
-    const pdf = await canvas.findByRole('figure', {
-      name: `${FEATURED}.pdf, PDF from liro-folio`,
-    })
-    await expect(within(pdf).getByRole('button', { name: 'Download PDF' })).toBeVisible()
+    await userEvent.click(await canvas.findByRole('button', { name: 'Download PDF' }))
+    const dialog = await body.findByRole('dialog', { name: /Print or export/ })
+    await expect(within(dialog).getByText(`Invoice ${FEATURED}`)).toBeVisible()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Download PDF' }))
+    await waitFor(() => expect(canvas.getByText(`${FEATURED}.pdf downloaded`)).toBeVisible())
     await userEvent.click(canvas.getByRole('link', { name: `Back to ${FEATURED}` }))
     await settle()
     await expect(await canvas.findByRole('heading', { level: 1, name: FEATURED })).toBeVisible()
   },
+}
+
+/** The invoice's PDF in the page viewer: page images, zoom and fit, "Download PDF". */
+export const PrintoutInvoice: Story = {
+  name: 'Invoice PDF',
+  render: () => <ExampleApp start={ROUTES.invoicePrint(FEATURED)} />,
+}
+
+/** The invoice's "Download PDF" asks for the options first: type, and the rest under "More". */
+export const PrintoutInvoiceOptions: Story = {
+  name: 'Invoice PDF, options before download',
+  render: () => <ExampleApp start={`${ROUTES.invoicePrint(FEATURED)}?options=open`} />,
+}
+
+/**
+ * HR places the annex's signatures before sending it: one box per signer, and the coordinates
+ * the application gets back, in PDF points from the page's bottom-left corner.
+ */
+export const AnnexSignatures: Story = {
+  name: 'Annex, place the signatures',
+  render: () => <ExampleApp start={ANNEX_SIGNATURES_ROUTE} />,
+}
+
+/** Placing on the annex: Nikola takes the employee's field, Nenad is placed with a press. */
+export const AnnexSignaturesInteraction: Story = {
+  name: 'Annex, place the signatures, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={ANNEX_SIGNATURES_ROUTE} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: "Employee's signature (page 2)" }))
+    await waitFor(() =>
+      expect(canvas.getByText('Page 2, x 56 pt, y 96 pt, 190 × 48 pt')).toBeVisible(),
+    )
+    await userEvent.click(canvas.getByRole('radio', { name: /Nenad Kovačević/ }))
+    await userEvent.click(canvas.getByRole('button', { name: "Director's signature (page 2)" }))
+    await waitFor(() =>
+      expect(canvas.getByText('Page 2, x 349.28 pt, y 96 pt, 190 × 48 pt')).toBeVisible(),
+    )
+  },
+}
+
+/** The annex's signature placement at phone width: a tap places the box. */
+export const AnnexSignaturesPhone: Story = {
+  name: 'Annex, place the signatures, phone',
+  render: () => <OnPhone start={ANNEX_SIGNATURES_ROUTE} />,
 }

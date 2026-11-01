@@ -2030,6 +2030,55 @@ export interface LiroMessages {
   'recognized.showSource': string
   /** PageViewer: the highlighted region, announced ("Highlighted: Total, page 1 of 2"). */
   'viewer.highlighted': (label: string, pageText: string) => string
+  /** PageViewer: the page as wide as the viewer. */
+  'viewer.fitWidth': string
+  /** PageViewer: the whole page in view (a thermal roll, a tall page). */
+  'viewer.fitPage': string
+  /** PageViewer: the download action. */
+  'viewer.downloadPdf': string
+  /** PageViewer: an area of the page, for assistive technology ("Signature: Buyer, page 1 of 2"). */
+  'viewer.area': (kind: 'signature' | 'text' | 'choice', label: string, pageText: string) => string
+  /** SignaturePlacer: the list of signers. */
+  'signature.signers': string
+  /** SignaturePlacer: a signer without a box yet. */
+  'signature.notPlaced': string
+  /** SignaturePlacer: where a box stands, the numbers already formatted. */
+  'signature.where': (pageText: string, xText: string, yText: string) => string
+  /** SignaturePlacer: how to place a box. */
+  'signature.hint': string
+  /** SignaturePlacer: puts the box at the first free spot of the page shown. */
+  'signature.placeOnPage': string
+  /** SignaturePlacer: removes the chosen signer's box. */
+  'signature.remove': string
+  /** SignaturePlacer: over the document's empty signature fields. */
+  'signature.areas': string
+  /** SignaturePlacer: takes one empty signature field ("Buyer's signature (page 2)"). */
+  'signature.useArea': (label: string, pageText: string) => string
+  /** SignaturePlacer: announced after a box is placed or moved. */
+  'signature.placed': (name: string, where: string) => string
+  /** SignaturePlacer: announced after a box is removed. */
+  'signature.removed': (name: string) => string
+  /** SignaturePlacer: a place where the box cannot stand. */
+  'signature.noRoom': string
+  /** SignaturePlacer: what a box is, for assistive technology. */
+  'signature.box': string
+  /** SignaturePlacer: a box's name ("Signature of Ana Petrović, page 1, …"). */
+  'signature.boxLabel': (name: string, where: string) => string
+  /** DocumentOptionsDialog: the title. */
+  'documentOptions.title': string
+  'documentOptions.type': string
+  'documentOptions.more': string
+  'documentOptions.fewer': string
+  'documentOptions.language': string
+  'documentOptions.secondLanguage': string
+  /** DocumentOptionsDialog: no second language (a document in one language). */
+  'documentOptions.noSecondLanguage': string
+  'documentOptions.marks': string
+  'documentOptions.qr': string
+  'documentOptions.signature': string
+  'documentOptions.paper': string
+  /** DocumentOptionsDialog: keep these options for the document type ("Remember for Invoice"). */
+  'documentOptions.remember': (type: string) => string
   // Value comparison
   /** ValueComparison: "2 of 5 differ" over the rows. */
   'comparison.count': (count: number, countText: string, total: number, totalText: string) => string
