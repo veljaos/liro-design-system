@@ -6,7 +6,9 @@ import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
 import { EmptyState } from './empty-state'
 import { PageViewer } from './page-viewer'
+import { PAGE_SIZES } from './document-areas'
 import { BLURRED_PAGES, SAMPLE_PAGES, SAMPLE_REGIONS } from './page-viewer-story-data'
+import { A4_AREAS, A4_SAMPLE, samplePages } from './sample-pages-story-data'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
 
 const meta = {
@@ -271,5 +273,76 @@ export const MovingHighlight: Story = {
     await expect(canvas.getByText(/^Zoom 125/)).toBeInTheDocument()
     await userEvent.click(canvas.getByRole('button', { name: 'Show the number' }))
     await expect(canvas.getByText('Highlighted: Number, page 1 of 2')).toBeInTheDocument()
+  },
+}
+
+/**
+ * A PDF renderer's output: neutral sample pages in A4, with the areas it returned (PDF points from
+ * each page's bottom-left corner) drawn as dashed frames with their kind and name, and
+ * "Download PDF" in the toolbar. The second page holds the two signature fields.
+ */
+export const RendererAreas: Story = {
+  name: 'PDF pages with areas to sign and fill',
+  args: {
+    label: 'Sample document, 2 pages',
+    pages: A4_SAMPLE,
+    regions: [],
+    areas: A4_AREAS,
+    defaultPage: 2,
+    defaultFit: 'page',
+    onDownload: () => undefined,
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Page 2 of 2')).toBeVisible()
+    await expect(canvasElement.querySelectorAll('[data-slot="page-viewer-area"]')).toHaveLength(2)
+    await expect(canvas.getByText("Signature: Seller's signature, page 2 of 2")).toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: 'Download PDF' })).toBeVisible()
+  },
+}
+
+/** An A5 page: its own size from the metadata, never A4. */
+export const A5Page: Story = {
+  name: 'A5 page',
+  args: { label: 'Sample A5 page', pages: samplePages(1, PAGE_SIZES.a5), regions: [] },
+}
+
+/** An A4 landscape page. */
+export const LandscapePage: Story = {
+  name: 'A4 landscape page',
+  args: {
+    label: 'Sample landscape page',
+    pages: samplePages(1, PAGE_SIZES.a4Landscape),
+    regions: [],
+  },
+}
+
+/** A thermal roll, narrow and very tall, opened whole ("Fit page" sets the zoom it opens at). */
+export const ThermalRoll: Story = {
+  name: 'Thermal roll, whole',
+  args: {
+    label: 'Sample receipt roll',
+    pages: samplePages(1, PAGE_SIZES.thermal80),
+    regions: [],
+    defaultZoom: 25,
+  },
+}
+
+/** "Fit page" shows a tall page whole; "Fit width" goes back to the full width. */
+export const FitPage: Story = {
+  name: 'Fit page, interaction',
+  tags: ['interaction'],
+  args: { label: 'Sample receipt roll', pages: samplePages(1, PAGE_SIZES.thermal80), regions: [] },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Fit page' }))
+    await waitFor(() => expect(canvas.queryByText('Zoom 100%')).toBeNull())
+    const page = canvasElement.querySelector<HTMLElement>('[data-slot="page-viewer-page"]')
+    const area = canvasElement.querySelector<HTMLElement>('[data-slot="page-viewer-pages"]')
+    await expect((page?.offsetHeight ?? 0) <= (area?.clientHeight ?? 0)).toBe(true)
+    await userEvent.click(canvas.getByRole('button', { name: 'Fit width' }))
+    await waitFor(() => expect(canvas.getByText('Zoom 100%')).toBeInTheDocument())
   },
 }

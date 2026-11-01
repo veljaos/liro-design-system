@@ -1415,6 +1415,36 @@ export { clampPage, labelSide, regionBox, regionPage } from './components/page-v
 export type { PageRegion, RegionBox, ViewerPage } from './components/page-viewer-logic'
 export { RecognizedField } from './components/recognized-field'
 export type { RecognizedFieldProps } from './components/recognized-field'
+// ── A PDF renderer's pages: areas, signature placement, print and export options ──
+export {
+  NUDGE_POINTS,
+  PAGE_SIZES,
+  SIGNATURE_SIZE,
+  boxAtPoint,
+  firstFreeSpot,
+  fitPageZoom,
+  keepOnPage,
+  nudgeBox,
+  pdfBoxesOverlap,
+  placementFits,
+  toPdf,
+  toTopLeft,
+} from './components/document-areas'
+export type {
+  DocumentArea,
+  DocumentAreaKind,
+  PdfBox,
+  TopLeftBox,
+} from './components/document-areas'
+export { SignaturePlacer } from './components/signature-placer'
+export type { SignaturePlacerProps, SignatureSigner } from './components/signature-placer'
+export { DocumentOptionsDialog } from './components/document-options-dialog'
+export type {
+  DocumentOption,
+  DocumentOptionsAction,
+  DocumentOptionsDialogProps,
+  DocumentOptionsValue,
+} from './components/document-options-dialog'
 // ── Value comparison ──
 export { ValueComparison, valueComparisonCounts } from './components/value-comparison'
 export type { ComparisonRow, ValueComparisonProps } from './components/value-comparison'
